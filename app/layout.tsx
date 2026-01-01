@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { LayoutWrapper } from "./layout-wrapper"
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
@@ -51,10 +52,11 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${inter.variable} ${cormorantGaramond.variable} font-sans antialiased min-h-screen flex flex-col`}
+        suppressHydrationWarning={true}
       >
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
         <Analytics />
       </body>
     </html>

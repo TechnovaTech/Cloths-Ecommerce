@@ -36,8 +36,8 @@ export function FeaturedProducts() {
     <section className="py-24 bg-[#F2F2F2]">
       <div className="px-6 md:px-12 text-center mb-20">
         <span className="text-[10px] uppercase tracking-[0.4em] text-accent font-semibold mb-4 block">Essentials</span>
-        <h2 className="text-4xl md:text-5xl font-serif italic mb-6">Seasonal Favorites</h2>
-        <p className="text-muted-foreground max-w-xl mx-auto text-sm leading-relaxed">
+        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Seasonal Favorites</h2>
+        <p className="text-gray-700 max-w-xl mx-auto text-sm leading-relaxed">
           Discover our most coveted pieces, crafted with meticulous attention to detail and premium fabrics for the
           modern wardrobe.
         </p>
@@ -87,7 +87,7 @@ export function FeaturedProducts() {
 
             <div className="flex justify-between items-start px-2">
               <div>
-                <h3 className="text-lg font-serif italic mb-1">{product.name}</h3>
+                <h3 className="text-lg font-serif mb-1">{product.name}</h3>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest">{product.price}</p>
               </div>
               <div className="flex gap-1 mt-1">

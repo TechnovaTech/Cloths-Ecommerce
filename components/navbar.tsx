@@ -32,21 +32,21 @@ export function Navbar() {
 
         {/* Navigation Links - Left */}
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/shop" className="text-base uppercase tracking-widest hover:text-accent smooth-transition">
+          <Link href="/shop" className="text-base uppercase tracking-widest text-black font-medium hover:text-accent smooth-transition">
             Shop
           </Link>
-          <Link href="/collections" className="text-base uppercase tracking-widest hover:text-accent smooth-transition">
+          <Link href="/collections" className="text-base uppercase tracking-widest text-black font-medium hover:text-accent smooth-transition">
             Collections
           </Link>
          
-          <Link href="/about" className="text-base uppercase tracking-widest hover:text-accent smooth-transition">
+          <Link href="/about" className="text-base uppercase tracking-widest text-black font-medium hover:text-accent smooth-transition">
             Our Story
           </Link>
         </div>
 
         {/* Logo */}
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-          <h1 className="text-3xl font-serif tracking-widest uppercase italic">Atelier</h1>
+          <h1 className="text-3xl font-serif tracking-widest uppercase font-bold">Atelier</h1>
         </Link>
 
         {/* Icons - Right */}

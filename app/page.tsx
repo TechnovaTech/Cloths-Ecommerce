@@ -19,7 +19,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
-          <h2 className="text-white text-4xl md:text-6xl font-serif italic mb-8 max-w-3xl leading-tight">
+          <h2 className="text-white text-4xl md:text-6xl font-serif font-bold mb-8 max-w-3xl leading-tight">
             Crafted for longevity, designed for the modern individual.
           </h2>
           <button className="px-10 py-4 bg-white text-black text-[10px] uppercase tracking-[0.3em] font-bold hover:bg-accent hover:text-white smooth-transition">

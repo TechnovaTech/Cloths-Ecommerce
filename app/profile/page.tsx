@@ -106,7 +106,10 @@ export default function ProfilePage() {
                   </button>
                 ))}
                 
-                <button className="w-full flex items-center gap-3 p-4 text-left text-red-500 hover:bg-red-50 smooth-transition rounded-sm">
+                <button 
+                  onClick={() => window.location.href = '/login'}
+                  className="w-full flex items-center gap-3 p-4 text-left text-red-500 hover:bg-red-50 smooth-transition rounded-sm"
+                >
                   <LogOut size={18} />
                   <span className="text-sm">Sign Out</span>
                 </button>

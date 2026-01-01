@@ -19,7 +19,7 @@ export function HomeHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-white text-xs uppercase tracking-[0.4em] mb-6 font-medium"
+          className="text-white text-xs uppercase tracking-[0.4em] mb-6 font-bold"
         >
           Spring / Summer 2026
         </motion.span>
@@ -28,7 +28,7 @@ export function HomeHero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-white text-5xl md:text-8xl font-serif italic tracking-tighter mb-8 max-w-4xl"
+          className="text-white text-5xl md:text-8xl font-serif font-bold tracking-tighter mb-8 max-w-4xl"
         >
           Redefining Modern Fashion
         </motion.h1>

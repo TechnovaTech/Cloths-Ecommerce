@@ -16,12 +16,12 @@ export function CategoryScroll() {
     <section className="py-24 overflow-hidden">
       <div className="px-6 md:px-12 mb-12 flex justify-between items-end">
         <div>
-          <h2 className="text-4xl font-serif italic mb-2">Curated Categories</h2>
-          <p className="text-base text-muted-foreground uppercase tracking-widest">Explore our latest selections</p>
+          <h2 className="text-4xl font-serif font-bold mb-2">Curated Categories</h2>
+          <p className="text-base text-muted-foreground uppercase tracking-widest font-semibold">Explore our latest selections</p>
         </div>
         <Link
           href="/shop"
-          className="text-sm uppercase tracking-widest border-b border-black pb-1 hover:text-accent hover:border-accent smooth-transition"
+          className="text-sm uppercase tracking-widest border-b border-black pb-1 hover:text-accent hover:border-accent smooth-transition font-semibold"
         >
           View All
         </Link>
