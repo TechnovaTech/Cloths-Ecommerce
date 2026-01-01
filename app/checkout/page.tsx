@@ -1,0 +1,249 @@
+"use client"
+
+import * as React from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { ArrowLeft, CreditCard, Lock, Truck } from "lucide-react"
+
+const cartItems = [
+  {
+    id: 1,
+    name: "Minimalist Wool Overcoat",
+    price: 590,
+    size: "M",
+    color: "Charcoal",
+    quantity: 1,
+    image: "/minimal-wool-coat-front.jpg",
+  },
+  {
+    id: 2,
+    name: "Silk Blend Evening Shirt",
+    price: 240,
+    size: "L",
+    color: "White",
+    quantity: 2,
+    image: "/silk-shirt-front.jpg",
+  },
+]
+
+export default function CheckoutPage() {
+  const [step, setStep] = React.useState(1)
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const shipping = 0
+  const tax = Math.round(subtotal * 0.08)
+  const total = subtotal + shipping + tax
+
+  return (
+    <div className="pt-32 pb-24 px-6 md:px-12 bg-[#FAFAFA] min-h-screen">
+      <div className="max-w-screen-xl mx-auto">
+        {/* Header */}
+        <div className="mb-12">
+          <Link 
+            href="/cart" 
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary smooth-transition mb-8"
+          >
+            <ArrowLeft size={16} />
+            Back to Cart
+          </Link>
+          <h1 className="text-5xl md:text-6xl font-serif italic mb-4">Checkout</h1>
+          
+          {/* Progress Steps */}
+          <div className="flex items-center gap-4 mb-8">
+            {[1, 2, 3].map((num) => (
+              <div key={num} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                  step >= num ? 'bg-primary text-white' : 'bg-white border border-border text-muted-foreground'
+                }`}>
+                  {num}
+                </div>
+                {num < 3 && <div className={`w-12 h-0.5 mx-2 ${step > num ? 'bg-primary' : 'bg-border'}`} />}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-8 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <span className={step >= 1 ? 'text-primary font-bold' : ''}>Shipping</span>
+            <span className={step >= 2 ? 'text-primary font-bold' : ''}>Payment</span>
+            <span className={step >= 3 ? 'text-primary font-bold' : ''}>Review</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {step === 1 && (
+              <div className="bg-white rounded-lg shadow-sm border border-border p-8">
+                <h2 className="text-2xl font-serif italic mb-8">Shipping Information</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">First Name</label>
+                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Last Name</label>
+                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Email Address</label>
+                  <input type="email" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Address</label>
+                  <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">City</label>
+                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">State</label>
+                    <select className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none">
+                      <option>Select State</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">ZIP Code</label>
+                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setStep(2)}
+                  className="w-full bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition"
+                >
+                  Continue to Payment
+                </button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="bg-white rounded-lg shadow-sm border border-border p-8">
+                <h2 className="text-2xl font-serif italic mb-8">Payment Information</h2>
+                
+                <div className="mb-6">
+                  <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Card Number</label>
+                  <div className="relative">
+                    <input type="text" placeholder="1234 5678 9012 3456" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none pr-12" />
+                    <CreditCard size={20} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Expiry Date</label>
+                    <input type="text" placeholder="MM/YY" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">CVV</label>
+                    <input type="text" placeholder="123" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Cardholder Name</label>
+                  <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                </div>
+
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setStep(1)}
+                    className="flex-1 border border-border py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-gray-50 smooth-transition"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={() => setStep(3)}
+                    className="flex-1 bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition"
+                  >
+                    Review Order
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="bg-white rounded-lg shadow-sm border border-border p-8">
+                <h2 className="text-2xl font-serif italic mb-8">Review Your Order</h2>
+                
+                <div className="space-y-6 mb-8">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex gap-4 pb-6 border-b border-border last:border-0">
+                      <div className="w-20 h-24 bg-[#F2F2F2] rounded-sm overflow-hidden">
+                        <Image src={item.image} alt={item.name} width={80} height={96} className="object-cover w-full h-full" />
+                      </div>
+                      <div className="flex-grow">
+                        <h3 className="font-serif text-lg mb-1">{item.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">Size: {item.size} | Color: {item.color}</p>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Qty: {item.quantity}</span>
+                          <span className="font-medium">${item.price * item.quantity}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setStep(2)}
+                    className="flex-1 border border-border py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-gray-50 smooth-transition"
+                  >
+                    Back
+                  </button>
+                  <button className="flex-1 bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition flex items-center justify-center gap-2">
+                    <Lock size={16} />
+                    Place Order
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-32 bg-white rounded-lg shadow-sm border border-border p-8">
+              <h3 className="text-xl font-serif italic mb-6">Order Summary</h3>
+              
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between">
+                  <span className="text-sm">Subtotal</span>
+                  <span className="text-sm">${subtotal}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Shipping</span>
+                  <span className="text-sm text-green-600">Free</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Tax</span>
+                  <span className="text-sm">${tax}</span>
+                </div>
+                <div className="border-t border-border pt-4">
+                  <div className="flex justify-between font-medium text-lg">
+                    <span>Total</span>
+                    <span>${total}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-center">
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Lock size={14} />
+                  Secure 256-bit SSL encryption
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Truck size={14} />
+                  Free shipping on orders over $300
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

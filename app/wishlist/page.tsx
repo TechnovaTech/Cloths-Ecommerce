@@ -73,7 +73,7 @@ export default function WishlistPage() {
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-24">
+          <div className="bg-white rounded-lg shadow-sm border border-border p-12 text-center">
             <Heart size={48} className="mx-auto mb-6 text-muted-foreground" />
             <h2 className="text-2xl font-serif italic mb-4">Your wishlist is empty</h2>
             <p className="text-muted-foreground mb-8">Save items you love to purchase later</p>
@@ -87,22 +87,25 @@ export default function WishlistPage() {
         ) : (
           <>
             {/* Actions Bar */}
-            <div className="flex justify-between items-center mb-12 pb-6 border-b border-border">
-              <div className="flex items-center gap-6">
-                <button className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground hover:text-primary smooth-transition">
-                  Move All to Cart
-                </button>
-                <button className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground hover:text-red-500 smooth-transition">
-                  Clear Wishlist
-                </button>
+            <div className="bg-white rounded-lg shadow-sm border border-border p-6 mb-8">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-6">
+                  <button className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground hover:text-primary smooth-transition">
+                    Move All to Cart
+                  </button>
+                  <button className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground hover:text-red-500 smooth-transition">
+                    Clear Wishlist
+                  </button>
+                </div>
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Total Value: ${items.reduce((sum, item) => sum + item.price, 0)}
+                </p>
               </div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                Total Value: ${items.reduce((sum, item) => sum + item.price, 0)}
-              </p>
             </div>
 
             {/* Wishlist Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+            <div className="bg-white rounded-lg shadow-sm border border-border p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
               {items.map((item) => (
                 <div key={item.id} className="group relative">
                   {/* Remove Button */}
@@ -174,10 +177,11 @@ export default function WishlistPage() {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
 
             {/* Recommendations */}
-            <div className="mt-24 pt-16 border-t border-border">
+            <div className="bg-white rounded-lg shadow-sm border border-border p-8 mt-8">
               <h2 className="text-3xl font-serif italic mb-8 text-center">You might also like</h2>
               <div className="text-center">
                 <Link 

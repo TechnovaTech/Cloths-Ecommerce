@@ -16,12 +16,12 @@ export function CategoryScroll() {
     <section className="py-24 overflow-hidden">
       <div className="px-6 md:px-12 mb-12 flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-serif italic mb-2">Curated Categories</h2>
-          <p className="text-sm text-muted-foreground uppercase tracking-widest">Explore our latest selections</p>
+          <h2 className="text-4xl font-serif italic mb-2">Curated Categories</h2>
+          <p className="text-base text-muted-foreground uppercase tracking-widest">Explore our latest selections</p>
         </div>
         <Link
           href="/shop"
-          className="text-xs uppercase tracking-widest border-b border-black pb-1 hover:text-accent hover:border-accent smooth-transition"
+          className="text-sm uppercase tracking-widest border-b border-black pb-1 hover:text-accent hover:border-accent smooth-transition"
         >
           View All
         </Link>
@@ -37,21 +37,23 @@ export function CategoryScroll() {
             viewport={{ once: true }}
             className="flex-shrink-0 group cursor-pointer"
           >
-            <div className="relative w-[300px] h-[400px] md:w-[400px] md:h-[550px] overflow-hidden rounded-sm glass-effect">
-              <Image
-                src={cat.image || "/placeholder.svg"}
-                alt={cat.name}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 smooth-transition" />
-              <div className="absolute inset-x-0 bottom-0 p-8 text-center translate-y-4 group-hover:translate-y-0 smooth-transition">
-                <h3 className="text-white text-3xl font-serif italic mb-2">{cat.name}</h3>
-                <span className="text-white/0 group-hover:text-white/100 text-[10px] uppercase tracking-[0.3em] smooth-transition">
-                  Explore
-                </span>
+            <Link href={cat.href}>
+              <div className="relative w-[300px] h-[400px] md:w-[400px] md:h-[550px] overflow-hidden rounded-sm glass-effect">
+                <Image
+                  src={cat.image || "/placeholder.svg"}
+                  alt={cat.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 smooth-transition" />
+                <div className="absolute inset-x-0 bottom-0 p-8 text-center translate-y-4 group-hover:translate-y-0 smooth-transition">
+                  <h3 className="text-white text-4xl font-serif italic mb-2">{cat.name}</h3>
+                  <span className="text-white/0 group-hover:text-white/100 text-sm uppercase tracking-[0.3em] smooth-transition">
+                    Explore
+                  </span>
+                </div>
               </div>
-            </div>
+            </Link>
           </motion.div>
         ))}
       </div>

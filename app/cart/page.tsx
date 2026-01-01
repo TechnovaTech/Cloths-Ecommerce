@@ -76,7 +76,7 @@ export default function CartPage() {
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-24">
+          <div className="bg-white rounded-lg shadow-sm border border-border p-12 text-center">
             <h2 className="text-2xl font-serif italic mb-4">Your cart is empty</h2>
             <p className="text-muted-foreground mb-8">Discover our curated collection of premium essentials</p>
             <Link 
@@ -89,8 +89,10 @@ export default function CartPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-8">
-              {items.map((item) => (
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow-sm border border-border p-8">
+                <div className="space-y-8">
+                  {items.map((item) => (
                 <div key={item.id} className="flex gap-6 pb-8 border-b border-border">
                   <div className="relative w-32 h-40 bg-[#F2F2F2] rounded-sm overflow-hidden flex-shrink-0">
                     <Image
@@ -138,12 +140,14 @@ export default function CartPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="sticky top-32 bg-[#FAFAFA] p-8 rounded-sm">
+              <div className="sticky top-32 bg-white rounded-lg shadow-sm border border-border p-8">
                 <h2 className="text-xl font-serif italic mb-8">Order Summary</h2>
                 
                 <div className="space-y-4 mb-8">
@@ -166,9 +170,9 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <button className="w-full bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition mb-4">
+                <Link href="/checkout" className="w-full bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition mb-4 block text-center">
                   Proceed to Checkout
-                </button>
+                </Link>
                 
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground mb-2">Secure checkout powered by Stripe</p>

@@ -32,20 +32,21 @@ export function Navbar() {
 
         {/* Navigation Links - Left */}
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/shop" className="text-xs uppercase tracking-widest hover:text-accent smooth-transition">
+          <Link href="/shop" className="text-base uppercase tracking-widest hover:text-accent smooth-transition">
             Shop
           </Link>
-          <Link href="/collections" className="text-xs uppercase tracking-widest hover:text-accent smooth-transition">
+          <Link href="/collections" className="text-base uppercase tracking-widest hover:text-accent smooth-transition">
             Collections
           </Link>
-          <Link href="/about" className="text-xs uppercase tracking-widest hover:text-accent smooth-transition">
+         
+          <Link href="/about" className="text-base uppercase tracking-widest hover:text-accent smooth-transition">
             Our Story
           </Link>
         </div>
 
         {/* Logo */}
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-          <h1 className="text-2xl font-serif tracking-widest uppercase italic">Atelier</h1>
+          <h1 className="text-3xl font-serif tracking-widest uppercase italic">Atelier</h1>
         </Link>
 
         {/* Icons - Right */}
@@ -69,22 +70,25 @@ export function Navbar() {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 top-[60px] bg-white z-40 md:hidden flex flex-col items-center justify-center gap-8 animate-in fade-in slide-in-from-top-4 duration-300">
-          <Link href="/shop" className="text-2xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/shop" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
             Shop
           </Link>
-          <Link href="/collections" className="text-2xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/collections" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
             Collections
           </Link>
-          <Link href="/about" className="text-2xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/rental" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+            Rental
+          </Link>
+          <Link href="/about" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
             Our Story
           </Link>
-          <Link href="/wishlist" className="text-2xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/wishlist" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
             Wishlist
           </Link>
-          <Link href="/profile" className="text-2xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/profile" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
             Profile
           </Link>
-          <Link href="/cart" className="text-2xl font-serif" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/cart" className="text-3xl font-serif" onClick={() => setMobileMenuOpen(false)}>
             Cart
           </Link>
         </div>
