@@ -1,0 +1,152 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* <CHANGE> Premium clothing e-commerce color palette */
+  --background: #FAFAFA; /* Soft off-white */
+  --foreground: #2B2B2B; /* Dark gray text */
+  --card: #FFFFFF;
+  --card-foreground: #2B2B2B;
+  --popover: #FFFFFF;
+  --popover-foreground: #2B2B2B;
+  --primary: #111111; /* Charcoal black */
+  --primary-foreground: #FAFAFA;
+  --secondary: #F5F5F5;
+  --secondary-foreground: #2B2B2B;
+  --muted: #E8E8E8;
+  --muted-foreground: #6B6B6B;
+  --accent: #C2A875; /* Muted gold */
+  --accent-foreground: #111111;
+  --destructive: #DC2626;
+  --destructive-foreground: #FAFAFA;
+  --border: #E0E0E0;
+  --input: #E0E0E0;
+  --ring: #C2A875;
+  --chart-1: #C2A875;
+  --chart-2: #9FB8A0;
+  --chart-3: #111111;
+  --chart-4: #6B6B6B;
+  --chart-5: #2B2B2B;
+  --radius: 0.25rem; /* Subtle rounded corners for premium look */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #2B2B2B;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent: #F5F5F5;
+  --sidebar-accent-foreground: #2B2B2B;
+  --sidebar-border: #E0E0E0;
+  --sidebar-ring: #C2A875;
+}
+
+.dark {
+  --background: #111111;
+  --foreground: #FAFAFA;
+  --card: #1A1A1A;
+  --card-foreground: #FAFAFA;
+  --popover: #1A1A1A;
+  --popover-foreground: #FAFAFA;
+  --primary: #FAFAFA;
+  --primary-foreground: #111111;
+  --secondary: #2B2B2B;
+  --secondary-foreground: #FAFAFA;
+  --muted: #2B2B2B;
+  --muted-foreground: #9B9B9B;
+  --accent: #C2A875;
+  --accent-foreground: #111111;
+  --destructive: #DC2626;
+  --destructive-foreground: #FAFAFA;
+  --border: #2B2B2B;
+  --input: #2B2B2B;
+  --ring: #C2A875;
+  --chart-1: #C2A875;
+  --chart-2: #9FB8A0;
+  --chart-3: #FAFAFA;
+  --chart-4: #9B9B9B;
+  --chart-5: #6B6B6B;
+  --sidebar: #1A1A1A;
+  --sidebar-foreground: #FAFAFA;
+  --sidebar-primary: #FAFAFA;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #2B2B2B;
+  --sidebar-accent-foreground: #FAFAFA;
+  --sidebar-border: #2B2B2B;
+  --sidebar-ring: #C2A875;
+}
+
+@theme inline {
+  --font-sans: 'Cormorant Garamond', 'Geist', serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* <CHANGE> Premium typography settings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight;
+  }
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+/* <CHANGE> Custom utility classes for premium effects */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/30 border border-white/20;
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+  
+  .smooth-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
