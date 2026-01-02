@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { 
   LayoutDashboard, 
   Package, 
@@ -141,29 +142,47 @@ export default function AdminDashboard() {
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => setActiveTab(item.label)}
-              className={`w-full flex items-center justify-between p-3 rounded-sm text-left smooth-transition ${
-                activeTab === item.label
-                  ? "bg-primary text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <item.icon size={18} />
-                <span className="text-sm font-medium">{item.label}</span>
-              </div>
-              {item.count && (
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  activeTab === item.label ? "bg-white/20" : "bg-accent text-white"
-                }`}>
-                  {item.count}
-                </span>
-              )}
-            </button>
-          ))}
+          <Link href="/admin/products" className="w-full flex items-center justify-between p-3 rounded-sm text-left smooth-transition text-gray-700 hover:bg-gray-100">
+            <div className="flex items-center gap-3">
+              <Package size={18} />
+              <span className="text-sm font-medium">Products</span>
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-accent text-white">156</span>
+          </Link>
+          
+          <Link href="/admin/categories" className="w-full flex items-center justify-between p-3 rounded-sm text-left smooth-transition text-gray-700 hover:bg-gray-100">
+            <div className="flex items-center gap-3">
+              <Tag size={18} />
+              <span className="text-sm font-medium">Categories</span>
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-accent text-white">8</span>
+          </Link>
+          
+          <Link href="/admin/orders" className="w-full flex items-center justify-between p-3 rounded-sm text-left smooth-transition text-gray-700 hover:bg-gray-100">
+            <div className="flex items-center gap-3">
+              <ShoppingCart size={18} />
+              <span className="text-sm font-medium">Orders</span>
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-accent text-white">23</span>
+          </Link>
+          
+          <Link href="/admin/customers" className="w-full flex items-center justify-between p-3 rounded-sm text-left smooth-transition text-gray-700 hover:bg-gray-100">
+            <div className="flex items-center gap-3">
+              <Users size={18} />
+              <span className="text-sm font-medium">Customers</span>
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-accent text-white">1240</span>
+          </Link>
+          
+          <Link href="/admin/analytics" className="w-full flex items-center gap-3 p-3 rounded-sm text-left smooth-transition text-gray-700 hover:bg-gray-100">
+            <BarChart3 size={18} />
+            <span className="text-sm font-medium">Analytics</span>
+          </Link>
+          
+          <Link href="/admin/settings" className="w-full flex items-center gap-3 p-3 rounded-sm text-left smooth-transition text-gray-700 hover:bg-gray-100">
+            <Settings size={18} />
+            <span className="text-sm font-medium">Settings</span>
+          </Link>
         </nav>
         
         <div className="p-4 border-t border-border">
