@@ -6,6 +6,7 @@ import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { LayoutWrapper } from "./layout-wrapper"
+import { AuthProvider } from "@/contexts/AuthContext"
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
@@ -54,9 +55,11 @@ export default function RootLayout({
         className={`${inter.variable} ${cormorantGaramond.variable} font-sans antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning={true}
       >
-        <LayoutWrapper>
-          {children}
-        </LayoutWrapper>
+        <AuthProvider>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

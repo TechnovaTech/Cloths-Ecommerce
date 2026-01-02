@@ -2,12 +2,15 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Search, ShoppingBag, User, Menu, X, Heart } from "lucide-react"
+import { Search, ShoppingBag, User, Menu, X, Heart, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false)
+  const { user, logout } = useAuth()
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -57,9 +60,50 @@ export function Navbar() {
           <Link href="/wishlist" className="hidden md:block p-2 hover:text-accent smooth-transition">
             <Heart size={20} strokeWidth={1.5} />
           </Link>
-          <Link href="/profile" className="hidden md:block p-2 hover:text-accent smooth-transition">
-            <User size={20} strokeWidth={1.5} />
-          </Link>
+          
+          {/* User Menu */}
+          <div className="relative">
+            {user ? (
+              <>
+                <button 
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="hidden md:block p-2 hover:text-accent smooth-transition"
+                >
+                  <User size={20} strokeWidth={1.5} />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-12 bg-white border shadow-lg rounded-sm w-48 py-2 z-50">
+                    <div className="px-4 py-2 border-b">
+                      <p className="font-medium">{user.name}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                    <Link href="/profile" className="block px-4 py-2 hover:bg-gray-50">
+                      Profile
+                    </Link>
+                    <Link href="/orders" className="block px-4 py-2 hover:bg-gray-50">
+                      Orders
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link href="/admin" className="block px-4 py-2 hover:bg-gray-50">
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button 
+                      onClick={logout}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <LogOut size={16} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Link href="/login" className="hidden md:block p-2 hover:text-accent smooth-transition">
+                <User size={20} strokeWidth={1.5} />
+              </Link>
+            )}
+          </div>
           <Link href="/cart" className="p-2 hover:text-accent smooth-transition relative">
             <ShoppingBag size={20} strokeWidth={1.5} />
             <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />

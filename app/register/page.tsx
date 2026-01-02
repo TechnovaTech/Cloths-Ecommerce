@@ -3,10 +3,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
   const [formData, setFormData] = React.useState({
     firstName: "",
     lastName: "",
@@ -14,10 +17,34 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: ""
   })
+  const { register } = useAuth()
+  const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Register:", formData)
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match')
+      return
+    }
+    
+    setLoading(true)
+    const name = `${formData.firstName} ${formData.lastName}`
+    const success = await register(name, formData.email, formData.password)
+    if (success) {
+      // Check if user is admin and redirect accordingly
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const user = JSON.parse(userData)
+        if (user.role === 'admin') {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
+      } else {
+        router.push('/')
+      }
+    }
+    setLoading(false)
   }
 
   return (
@@ -138,8 +165,9 @@ export default function RegisterPage() {
           <button
             type="submit"
             className="w-full bg-primary text-white py-4 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition"
+            disabled={loading}
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
