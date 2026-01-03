@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
-    const product = await Product.findById(params.id);
+    const { id } = await params;
+    const product = await Product.findById(id);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
@@ -15,11 +16,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
+    const { id } = await params;
     const updateData = await request.json();
-    const product = await Product.findByIdAndUpdate(params.id, updateData, { new: true });
+    const product = await Product.findByIdAndUpdate(id, updateData, { new: true });
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
@@ -29,10 +31,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
-    const product = await Product.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const product = await Product.findByIdAndDelete(id);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }

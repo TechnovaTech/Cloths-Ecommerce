@@ -3,6 +3,7 @@
 import * as React from "react"
 import { User } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
+import Link from "next/link"
 
 const stats = [
   { title: "Total Revenue", value: "$45,231", change: "+12.5%" },
@@ -21,6 +22,18 @@ const recentOrders = [
 export default function AdminDashboard() {
   return (
     <AdminLayout title="Dashboard" subtitle="Welcome back, Admin">
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <div className="flex gap-4">
+          <Link
+            href="/admin/products"
+            className="bg-primary text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition"
+          >
+            Manage Products
+          </Link>
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
