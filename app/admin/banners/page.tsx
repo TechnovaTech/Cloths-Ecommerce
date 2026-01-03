@@ -1,71 +1,95 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Eye, Edit, Trash2, X, Upload } from "lucide-react"
+import { Plus, Eye, Edit, Trash2, X, Upload, Image } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
 
-const products = [
-  { id: 1, name: "Minimalist Wool Overcoat", price: "$590", stock: 12, category: "Outerwear", status: "Active" },
-  { id: 2, name: "Silk Blend Evening Shirt", price: "$240", stock: 8, category: "Shirts", status: "Active" },
-  { id: 3, name: "Structured Cotton Trousers", price: "$320", stock: 15, category: "Trousers", status: "Active" },
-  { id: 4, name: "Cashmere Knit Sweater", price: "$450", stock: 5, category: "Knitwear", status: "Low Stock" },
+const banners = [
+  { 
+    id: 1, 
+    title: "Summer Collection 2024", 
+    subtitle: "Discover the latest trends", 
+    status: "Active", 
+    position: "Hero", 
+    created: "2024-01-15",
+    image: "/images/banner1.jpg",
+    link: "/collections/summer"
+  },
+  { 
+    id: 2, 
+    title: "Winter Sale", 
+    subtitle: "Up to 50% off selected items", 
+    status: "Active", 
+    position: "Secondary", 
+    created: "2024-01-20",
+    image: "/images/banner2.jpg",
+    link: "/sale/winter"
+  },
+  { 
+    id: 3, 
+    title: "New Arrivals", 
+    subtitle: "Fresh styles for the season", 
+    status: "Inactive", 
+    position: "Sidebar", 
+    created: "2024-02-01",
+    image: "/images/banner3.jpg",
+    link: "/collections/new"
+  },
 ]
 
-export default function ProductsPage() {
-  const [showAddProductModal, setShowAddProductModal] = React.useState(false)
-  const [showEditProductModal, setShowEditProductModal] = React.useState(false)
-  const [showViewProductModal, setShowViewProductModal] = React.useState(false)
-  const [selectedProduct, setSelectedProduct] = React.useState(null)
-  const [productForm, setProductForm] = React.useState({
-    name: "",
-    price: "",
-    stock: "",
-    category: "",
-    description: "",
+export default function BannersPage() {
+  const [showAddModal, setShowAddModal] = React.useState(false)
+  const [showEditModal, setShowEditModal] = React.useState(false)
+  const [showViewModal, setShowViewModal] = React.useState(false)
+  const [selectedBanner, setSelectedBanner] = React.useState(null)
+  const [bannerForm, setBannerForm] = React.useState({
+    title: "",
+    subtitle: "",
+    position: "Hero",
+    link: "",
     status: "Active"
   })
 
-  const handleAddProduct = () => {
-    console.log("Adding product:", productForm)
-    setShowAddProductModal(false)
-    setProductForm({ name: "", price: "", stock: "", category: "", description: "", status: "Active" })
+  const handleAddBanner = () => {
+    console.log("Adding banner:", bannerForm)
+    setShowAddModal(false)
+    setBannerForm({ title: "", subtitle: "", position: "Hero", link: "", status: "Active" })
   }
 
-  const handleEditProduct = (product) => {
-    setSelectedProduct(product)
-    setProductForm({
-      name: product.name,
-      price: product.price,
-      stock: product.stock.toString(),
-      category: product.category,
-      description: "Product description here",
-      status: product.status
+  const handleEditBanner = (banner) => {
+    setSelectedBanner(banner)
+    setBannerForm({
+      title: banner.title,
+      subtitle: banner.subtitle,
+      position: banner.position,
+      link: banner.link,
+      status: banner.status
     })
-    setShowEditProductModal(true)
+    setShowEditModal(true)
   }
 
-  const handleViewProduct = (product) => {
-    setSelectedProduct(product)
-    setShowViewProductModal(true)
+  const handleViewBanner = (banner) => {
+    setSelectedBanner(banner)
+    setShowViewModal(true)
   }
 
-  const handleUpdateProduct = () => {
-    console.log("Updating product:", productForm)
-    setShowEditProductModal(false)
-    setSelectedProduct(null)
+  const handleUpdateBanner = () => {
+    console.log("Updating banner:", bannerForm)
+    setShowEditModal(false)
+    setSelectedBanner(null)
   }
 
   return (
-    <AdminLayout title="Products Management" subtitle="Manage your product catalog">
+    <AdminLayout title="Banners Management" subtitle="Manage website banners and promotions">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
-          <h2 className="text-lg font-serif font-bold text-primary">All Products</h2>
+          <h2 className="text-lg font-serif font-bold text-primary">All Banners</h2>
           <button 
-            onClick={() => setShowAddProductModal(true)}
+            onClick={() => setShowAddModal(true)}
             className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
           >
             <Plus size={16} />
-            Add Product
+            Add Banner
           </button>
         </div>
         
@@ -74,38 +98,46 @@ export default function ProductsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Product</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Price</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Stock</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Category</th>
+                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Banner</th>
+                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Position</th>
                   <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Status</th>
+                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Created</th>
                   <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 font-medium text-primary">{product.name}</td>
-                    <td className="py-4 text-gray-700">{product.price}</td>
-                    <td className="py-4 text-gray-700">{product.stock}</td>
-                    <td className="py-4 text-gray-700">{product.category}</td>
+                {banners.map((banner) => (
+                  <tr key={banner.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-12 bg-gray-100 rounded-sm flex items-center justify-center">
+                          <Image size={20} className="text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-primary">{banner.title}</p>
+                          <p className="text-sm text-gray-600">{banner.subtitle}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 text-gray-700">{banner.position}</td>
                     <td className="py-4">
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        product.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        banner.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                       }`}>
-                        {product.status}
+                        {banner.status}
                       </span>
                     </td>
+                    <td className="py-4 text-gray-700">{banner.created}</td>
                     <td className="py-4">
                       <div className="flex items-center gap-2">
                         <button 
-                          onClick={() => handleViewProduct(product)}
+                          onClick={() => handleViewBanner(banner)}
                           className="p-1 text-gray-600 hover:text-primary"
                         >
                           <Eye size={16} />
                         </button>
                         <button 
-                          onClick={() => handleEditProduct(product)}
+                          onClick={() => handleEditBanner(banner)}
                           className="p-1 text-gray-600 hover:text-primary"
                         >
                           <Edit size={16} />
@@ -123,14 +155,14 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Add Product Modal */}
-      {showAddProductModal && (
+      {/* Add Banner Modal */}
+      {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-sm w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-serif font-bold text-primary">Add New Product</h3>
+              <h3 className="text-lg font-serif font-bold text-primary">Add New Banner</h3>
               <button 
-                onClick={() => setShowAddProductModal(false)}
+                onClick={() => setShowAddModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-sm"
               >
                 <X size={20} />
@@ -141,101 +173,86 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Product Name
+                    Banner Title
                   </label>
                   <input
                     type="text"
-                    value={productForm.name}
-                    onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                    value={bannerForm.title}
+                    onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="Enter product name"
+                    placeholder="Enter banner title"
                   />
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Price
+                    Subtitle
                   </label>
                   <input
                     type="text"
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                    value={bannerForm.subtitle}
+                    onChange={(e) => setBannerForm({...bannerForm, subtitle: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="$0.00"
+                    placeholder="Enter subtitle"
                   />
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Stock Quantity
-                  </label>
-                  <input
-                    type="number"
-                    value={productForm.stock}
-                    onChange={(e) => setProductForm({...productForm, stock: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="0"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Category
+                    Position
                   </label>
                   <select
-                    value={productForm.category}
-                    onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                    value={bannerForm.position}
+                    onChange={(e) => setBannerForm({...bannerForm, position: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
                   >
-                    <option value="">Select Category</option>
-                    <option value="Outerwear">Outerwear</option>
-                    <option value="Shirts">Shirts</option>
-                    <option value="Trousers">Trousers</option>
-                    <option value="Knitwear">Knitwear</option>
-                    <option value="Accessories">Accessories</option>
-                    <option value="Footwear">Footwear</option>
+                    <option value="Hero">Hero</option>
+                    <option value="Secondary">Secondary</option>
+                    <option value="Sidebar">Sidebar</option>
+                    <option value="Footer">Footer</option>
                   </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Link URL
+                  </label>
+                  <input
+                    type="text"
+                    value={bannerForm.link}
+                    onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                    placeholder="/collections/summer"
+                  />
                 </div>
               </div>
               
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Description
-                </label>
-                <textarea
-                  value={productForm.description}
-                  onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent h-24"
-                  placeholder="Enter product description"
-                />
-              </div>
-              
-              <div>
-                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Product Images
+                  Banner Image
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-sm p-8 text-center hover:border-accent smooth-transition">
                   <Upload className="mx-auto mb-4 text-gray-400" size={48} />
-                  <p className="text-gray-600 mb-2">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                  <input type="file" className="hidden" multiple accept="image/*" />
+                  <p className="text-gray-600 mb-2">Click to upload banner image</p>
+                  <p className="text-xs text-gray-500">PNG, JPG up to 5MB (Recommended: 1920x600px)</p>
+                  <input type="file" className="hidden" accept="image/*" />
                 </div>
               </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border">
                 <button
                   type="button"
-                  onClick={() => setShowAddProductModal(false)}
+                  onClick={() => setShowAddModal(false)}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 smooth-transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleAddProduct}
+                  onClick={handleAddBanner}
                   className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent smooth-transition font-bold"
                 >
-                  Add Product
+                  Add Banner
                 </button>
               </div>
             </form>
@@ -243,14 +260,14 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Edit Product Modal */}
-      {showEditProductModal && (
+      {/* Edit Banner Modal */}
+      {showEditModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-sm w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-serif font-bold text-primary">Edit Product</h3>
+              <h3 className="text-lg font-serif font-bold text-primary">Edit Banner</h3>
               <button 
-                onClick={() => setShowEditProductModal(false)}
+                onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-sm"
               >
                 <X size={20} />
@@ -261,56 +278,54 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Product Name
+                    Banner Title
                   </label>
                   <input
                     type="text"
-                    value={productForm.name}
-                    onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                    value={bannerForm.title}
+                    onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
                   />
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Price
+                    Subtitle
                   </label>
                   <input
                     type="text"
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                    value={bannerForm.subtitle}
+                    onChange={(e) => setBannerForm({...bannerForm, subtitle: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
                   />
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Stock Quantity
-                  </label>
-                  <input
-                    type="number"
-                    value={productForm.stock}
-                    onChange={(e) => setProductForm({...productForm, stock: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Category
+                    Position
                   </label>
                   <select
-                    value={productForm.category}
-                    onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                    value={bannerForm.position}
+                    onChange={(e) => setBannerForm({...bannerForm, position: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
                   >
-                    <option value="Outerwear">Outerwear</option>
-                    <option value="Shirts">Shirts</option>
-                    <option value="Trousers">Trousers</option>
-                    <option value="Knitwear">Knitwear</option>
-                    <option value="Accessories">Accessories</option>
-                    <option value="Footwear">Footwear</option>
+                    <option value="Hero">Hero</option>
+                    <option value="Secondary">Secondary</option>
+                    <option value="Sidebar">Sidebar</option>
+                    <option value="Footer">Footer</option>
                   </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Link URL
+                  </label>
+                  <input
+                    type="text"
+                    value={bannerForm.link}
+                    onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                  />
                 </div>
               </div>
               
@@ -319,30 +334,29 @@ export default function ProductsPage() {
                   Status
                 </label>
                 <select
-                  value={productForm.status}
-                  onChange={(e) => setProductForm({...productForm, status: e.target.value})}
+                  value={bannerForm.status}
+                  onChange={(e) => setBannerForm({...bannerForm, status: e.target.value})}
                   className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
-                  <option value="Low Stock">Low Stock</option>
                 </select>
               </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border">
                 <button
                   type="button"
-                  onClick={() => setShowEditProductModal(false)}
+                  onClick={() => setShowEditModal(false)}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 smooth-transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleUpdateProduct}
+                  onClick={handleUpdateBanner}
                   className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent smooth-transition font-bold"
                 >
-                  Update Product
+                  Update Banner
                 </button>
               </div>
             </form>
@@ -350,14 +364,14 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* View Product Modal */}
-      {showViewProductModal && selectedProduct && (
+      {/* View Banner Modal */}
+      {showViewModal && selectedBanner && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-sm w-full max-w-2xl mx-4">
             <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-serif font-bold text-primary">Product Details</h3>
+              <h3 className="text-lg font-serif font-bold text-primary">Banner Details</h3>
               <button 
-                onClick={() => setShowViewProductModal(false)}
+                onClick={() => setShowViewModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-sm"
               >
                 <X size={20} />
@@ -365,33 +379,38 @@ export default function ProductsPage() {
             </div>
             
             <div className="p-6 space-y-6">
+              <div className="w-full h-48 bg-gray-100 rounded-sm flex items-center justify-center mb-6">
+                <Image size={48} className="text-gray-400" />
+                <span className="ml-2 text-gray-500">Banner Preview</span>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Product Name
+                    Title
                   </label>
-                  <p className="text-lg font-medium text-primary">{selectedProduct.name}</p>
+                  <p className="text-lg font-medium text-primary">{selectedBanner.title}</p>
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Price
+                    Subtitle
                   </label>
-                  <p className="text-lg font-bold text-primary">{selectedProduct.price}</p>
+                  <p className="text-lg text-gray-700">{selectedBanner.subtitle}</p>
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Stock Quantity
+                    Position
                   </label>
-                  <p className="text-lg text-gray-700">{selectedProduct.stock}</p>
+                  <p className="text-lg text-gray-700">{selectedBanner.position}</p>
                 </div>
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Category
+                    Link
                   </label>
-                  <p className="text-lg text-gray-700">{selectedProduct.category}</p>
+                  <p className="text-lg text-blue-600">{selectedBanner.link}</p>
                 </div>
                 
                 <div>
@@ -399,16 +418,23 @@ export default function ProductsPage() {
                     Status
                   </label>
                   <span className={`text-xs px-3 py-1 rounded-full ${
-                    selectedProduct.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                    selectedBanner.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                   }`}>
-                    {selectedProduct.status}
+                    {selectedBanner.status}
                   </span>
+                </div>
+                
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Created
+                  </label>
+                  <p className="text-lg text-gray-700">{selectedBanner.created}</p>
                 </div>
               </div>
               
               <div className="pt-6 border-t border-border">
                 <button
-                  onClick={() => setShowViewProductModal(false)}
+                  onClick={() => setShowViewModal(false)}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-sm hover:bg-gray-200 smooth-transition"
                 >
                   Close

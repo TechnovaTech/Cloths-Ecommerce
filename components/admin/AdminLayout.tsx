@@ -14,7 +14,8 @@ import {
   Bell,
   User,
   LogOut,
-  Tag
+  Tag,
+  Image
 } from "lucide-react"
 
 interface AdminLayoutProps {
@@ -72,6 +73,16 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
           >
             <Tag size={18} />
             <span className="text-sm font-medium">Categories</span>
+          </Link>
+          
+          <Link 
+            href="/admin/banners" 
+            className={`w-full flex items-center gap-3 p-3 rounded-sm text-left smooth-transition ${
+              isActive('/admin/banners') ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Image size={18} />
+            <span className="text-sm font-medium">Banners</span>
           </Link>
           
           <Link 
