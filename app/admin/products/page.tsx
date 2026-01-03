@@ -19,7 +19,11 @@ export default function ProductsAdmin() {
     category: "",
     stock: "",
     featured: false,
-    images: ["", "", "", ""]
+    images: ["", "", "", ""],
+    minStock: "",
+    maxStock: "",
+    discount: "",
+    discountType: "percentage"
   })
   
   const { user } = useAuth()
@@ -68,7 +72,11 @@ export default function ProductsAdmin() {
         body: JSON.stringify({
           ...productForm,
           price: Number(productForm.price),
-          stock: Number(productForm.stock)
+          stock: Number(productForm.stock),
+          minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
+          maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
+          discount: productForm.discount ? Number(productForm.discount) : undefined,
+          images: productForm.images.filter(img => img !== "")
         })
       })
 
@@ -83,6 +91,8 @@ export default function ProductsAdmin() {
 
   const handleEdit = (product) => {
     setEditingProduct(product)
+    const productImages = product.images || []
+    const paddedImages = [...productImages, "", "", "", ""].slice(0, 4)
     setProductForm({
       name: product.name,
       description: product.description,
@@ -90,7 +100,11 @@ export default function ProductsAdmin() {
       category: product.category,
       stock: product.stock.toString(),
       featured: product.featured,
-      images: product.images || ["", "", "", ""]
+      images: paddedImages,
+      minStock: product.minStock?.toString() || "",
+      maxStock: product.maxStock?.toString() || "",
+      discount: product.discount?.toString() || "",
+      discountType: product.discountType || "percentage"
     })
     setShowModal(true)
   }
@@ -114,7 +128,11 @@ export default function ProductsAdmin() {
       category: "",
       stock: "",
       featured: false,
-      images: ["", "", "", ""]
+      images: ["", "", "", ""],
+      minStock: "",
+      maxStock: "",
+      discount: "",
+      discountType: "percentage"
     })
     setEditingProduct(null)
     setShowModal(false)
@@ -331,6 +349,73 @@ export default function ProductsAdmin() {
                     Featured Product
                   </span>
                 </label>
+              </div>
+
+              {/* Stock Management */}
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Stock Management (Optional)
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-gray-600 mb-1 block">
+                      Minimum Stock Alert
+                    </label>
+                    <input
+                      type="number"
+                      value={productForm.minStock}
+                      onChange={(e) => setProductForm({...productForm, minStock: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600 mb-1 block">
+                      Maximum Stock Limit
+                    </label>
+                    <input
+                      type="number"
+                      value={productForm.maxStock}
+                      onChange={(e) => setProductForm({...productForm, maxStock: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
+                      placeholder="1000"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Discount Management */}
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Discount Management (Optional)
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-gray-600 mb-1 block">
+                      Discount Value
+                    </label>
+                    <input
+                      type="number"
+                      value={productForm.discount}
+                      onChange={(e) => setProductForm({...productForm, discount: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600 mb-1 block">
+                      Discount Type
+                    </label>
+                    <select
+                      value={productForm.discountType}
+                      onChange={(e) => setProductForm({...productForm, discountType: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
+                    >
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount ($)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border">

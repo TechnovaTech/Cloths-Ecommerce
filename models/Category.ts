@@ -15,11 +15,17 @@ const CategorySchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active',
   },
-  images: [{
-    type: String,
-  }],
+  images: {
+    type: [String],
+    default: []
+  },
 }, {
   timestamps: true,
 });
 
-export default mongoose.models.Category || mongoose.model('Category', CategorySchema);
+// Clear any existing model to avoid conflicts
+if (mongoose.models.Category) {
+  delete mongoose.models.Category;
+}
+
+export default mongoose.model('Category', CategorySchema);

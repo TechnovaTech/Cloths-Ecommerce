@@ -7,13 +7,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await dbConnect();
     const { id } = await params;
     const updateData = await request.json();
+    
+    // Filter out empty images if images are being updated
+    if (updateData.images) {
+      updateData.images = updateData.images.filter(img => img && img.trim() !== '');
+    }
+    
+    console.log('Updating category with data:', updateData);
+    
     const category = await Category.findByIdAndUpdate(id, updateData, { new: true });
     if (!category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
     return NextResponse.json(category);
   } catch (error) {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('Category update error:', error);
+    return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
 }
 

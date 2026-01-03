@@ -15,7 +15,7 @@ export default function CategoriesAdmin() {
     name: "",
     description: "",
     status: "active",
-    images: ["", ""]
+    images: []
   })
   
   const { user } = useAuth()
@@ -41,8 +41,46 @@ export default function CategoriesAdmin() {
     }
   }
 
+  const handleImageUpload = async (file, index) => {
+    if (!file) return
+    
+    try {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const base64 = e.target.result
+        const newImages = [...categoryForm.images]
+        // Ensure we have enough slots in the array
+        while (newImages.length <= index) {
+          newImages.push('')
+        }
+        newImages[index] = base64
+        setCategoryForm({...categoryForm, images: newImages})
+        console.log('Image added at index', index, ':', base64.substring(0, 50) + '...')
+        console.log('Current images array:', newImages)
+      }
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error('Error processing image:', error)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Ensure images array exists and filter out empty values
+    const validImages = (categoryForm.images || []).filter(img => img && img.trim() !== '' && img !== 'data:')
+    
+    const formData = {
+      name: categoryForm.name,
+      description: categoryForm.description,
+      status: categoryForm.status,
+      images: validImages
+    }
+    
+    console.log('Submitting category:', formData)
+    console.log('Valid images count:', validImages.length)
+    console.log('Images preview:', validImages.map(img => img.substring(0, 50) + '...'))
+    
     try {
       const url = editingCategory ? `/api/categories/${editingCategory._id}` : '/api/categories'
       const method = editingCategory ? 'PUT' : 'POST'
@@ -50,12 +88,17 @@ export default function CategoriesAdmin() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(categoryForm)
+        body: JSON.stringify(formData)
       })
 
       if (res.ok) {
+        const result = await res.json()
+        console.log('Server response:', result)
         fetchCategories()
         resetForm()
+      } else {
+        const errorText = await res.text()
+        console.error('Server error:', errorText)
       }
     } catch (error) {
       console.error('Error saving category:', error)
@@ -68,7 +111,7 @@ export default function CategoriesAdmin() {
       name: category.name,
       description: category.description,
       status: category.status,
-      images: category.images || ["", ""]
+      images: category.images || []
     })
     setShowModal(true)
   }
@@ -89,7 +132,7 @@ export default function CategoriesAdmin() {
       name: "",
       description: "",
       status: "active",
-      images: ["", ""]
+      images: []
     })
     setEditingCategory(null)
     setShowModal(false)
@@ -125,6 +168,7 @@ export default function CategoriesAdmin() {
               <tr className="border-b border-gray-200">
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Category</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Description</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Images</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Status</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Created</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
@@ -142,6 +186,17 @@ export default function CategoriesAdmin() {
                     </div>
                   </td>
                   <td className="py-4 px-6 text-gray-700">{category.description}</td>
+                  <td className="py-4 px-6">
+                    <div className="flex gap-1">
+                      {category.images && category.images.length > 0 ? (
+                        category.images.slice(0, 2).map((img, idx) => (
+                          <img key={idx} src={img} alt="Category" className="w-8 h-8 object-cover rounded" />
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-sm">No images</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-4 px-6">
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       category.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -232,32 +287,33 @@ export default function CategoriesAdmin() {
 
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Category Images (2 Images)
+                  Category Images (Up to 2 Images)
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {[0, 1].map((index) => (
                     <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center hover:border-accent smooth-transition">
-                      <label className="text-xs text-gray-600 mb-2 block">
-                        Image {index + 1}
-                      </label>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0]
                           if (file) {
-                            const newImages = [...categoryForm.images]
-                            newImages[index] = file.name
-                            setCategoryForm({...categoryForm, images: newImages})
+                            handleImageUpload(file, index)
                           }
                         }}
                         className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
                       />
                       {categoryForm.images[index] && (
-                        <p className="text-xs text-gray-500 mt-2 truncate">{categoryForm.images[index]}</p>
+                        <div className="mt-2">
+                          <img src={categoryForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
+                          <p className="text-xs text-gray-500 mt-1">Image {index + 1} loaded</p>
+                        </div>
                       )}
                     </div>
                   ))}
+                </div>
+                <div className="mt-2 text-xs text-gray-600">
+                  Current images: {categoryForm.images.filter(img => img && img.trim()).length}
                 </div>
               </div>
               

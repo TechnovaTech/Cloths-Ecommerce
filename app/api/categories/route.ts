@@ -15,10 +15,34 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
-    const categoryData = await request.json();
-    const category = await Category.create(categoryData);
-    return NextResponse.json(category, { status: 201 });
+    const data = await request.json();
+    
+    console.log('=== CATEGORY CREATION DEBUG ===');
+    console.log('Raw request data:', data);
+    console.log('Images received:', data.images);
+    console.log('Images array length:', data.images?.length || 0);
+    
+    // Ensure images is always an array
+    const images = Array.isArray(data.images) ? data.images : [];
+    
+    const categoryData = {
+      name: data.name,
+      description: data.description,
+      status: data.status || 'active',
+      images: images
+    };
+    
+    console.log('Saving category with images count:', images.length);
+    
+    const category = new Category(categoryData);
+    const savedCategory = await category.save();
+    
+    console.log('Saved category images:', savedCategory.images);
+    console.log('Saved category full:', savedCategory.toObject());
+    
+    return NextResponse.json(savedCategory.toObject(), { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('Category creation error:', error);
+    return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
 }

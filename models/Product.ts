@@ -31,6 +31,20 @@ const ProductSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  minStock: {
+    type: Number,
+  },
+  maxStock: {
+    type: Number,
+  },
+  discount: {
+    type: Number,
+  },
+  discountType: {
+    type: String,
+    enum: ['percentage', 'fixed'],
+    default: 'percentage',
+  },
   featured: {
     type: Boolean,
     default: false,
