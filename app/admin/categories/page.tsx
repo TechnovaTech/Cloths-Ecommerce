@@ -14,7 +14,8 @@ export default function CategoriesAdmin() {
   const [categoryForm, setCategoryForm] = React.useState({
     name: "",
     description: "",
-    status: "active"
+    status: "active",
+    images: ["", ""]
   })
   
   const { user } = useAuth()
@@ -66,7 +67,8 @@ export default function CategoriesAdmin() {
     setCategoryForm({
       name: category.name,
       description: category.description,
-      status: category.status
+      status: category.status,
+      images: category.images || ["", ""]
     })
     setShowModal(true)
   }
@@ -86,7 +88,8 @@ export default function CategoriesAdmin() {
     setCategoryForm({
       name: "",
       description: "",
-      status: "active"
+      status: "active",
+      images: ["", ""]
     })
     setEditingCategory(null)
     setShowModal(false)
@@ -225,6 +228,37 @@ export default function CategoriesAdmin() {
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Category Images (2 Images)
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  {[0, 1].map((index) => (
+                    <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center hover:border-accent smooth-transition">
+                      <label className="text-xs text-gray-600 mb-2 block">
+                        Image {index + 1}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const newImages = [...categoryForm.images]
+                            newImages[index] = file.name
+                            setCategoryForm({...categoryForm, images: newImages})
+                          }
+                        }}
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
+                      />
+                      {categoryForm.images[index] && (
+                        <p className="text-xs text-gray-500 mt-2 truncate">{categoryForm.images[index]}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border">

@@ -15,6 +15,9 @@ const CategorySchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active',
   },
+  images: [{
+    type: String,
+  }],
 }, {
   timestamps: true,
 });
