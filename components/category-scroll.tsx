@@ -3,15 +3,65 @@
 import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
+import { useState, useEffect } from "react"
 
-const categories = [
-  { name: "Men", image: "/luxury-men-clothing.jpg", href: "/shop/men" },
-  { name: "Women", image: "/minimal-women-fashion.png", href: "/shop/women" },
-  { name: "Accessories", image: "/premium-leather-accessories.png", href: "/shop/accessories" },
-  { name: "New Drop", image: "/high-fashion-editorial-streetwear.jpg", href: "/shop/new-drop" },
-]
+interface Category {
+  _id: string
+  name: string
+  description: string
+  images: string[]
+  status: string
+}
 
 export function CategoryScroll() {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories')
+        if (res.ok) {
+          const data = await res.json()
+          setCategories(data.filter((cat: Category) => cat.status === 'active').slice(0, 4))
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCategories()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="py-24 overflow-hidden">
+        <div className="px-6 md:px-12 text-center">
+          <p className="text-gray-500">Loading categories...</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (categories.length === 0) {
+    return (
+      <section className="py-24 overflow-hidden">
+        <div className="px-6 md:px-12 text-center">
+          <h2 className="text-4xl font-serif font-bold mb-2">Curated Categories</h2>
+          <p className="text-base text-muted-foreground mb-8">Add categories in admin panel to display here</p>
+          <Link
+            href="/admin/categories"
+            className="text-sm uppercase tracking-widest border-b border-black pb-1 hover:text-accent hover:border-accent smooth-transition font-semibold"
+          >
+            Add Categories
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="py-24 overflow-hidden">
       <div className="px-6 md:px-12 mb-12 flex justify-between items-end">
@@ -30,17 +80,17 @@ export function CategoryScroll() {
       <div className="flex overflow-x-auto gap-6 px-6 md:px-12 no-scrollbar pb-8">
         {categories.map((cat, i) => (
           <motion.div
-            key={cat.name}
+            key={cat._id}
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: i * 0.1 }}
             viewport={{ once: true }}
             className="flex-shrink-0 group cursor-pointer"
           >
-            <Link href={cat.href}>
+            <Link href={`/collections/${cat._id}`}>
               <div className="relative w-[300px] h-[400px] md:w-[400px] md:h-[550px] overflow-hidden rounded-sm glass-effect">
                 <Image
-                  src={cat.image || "/placeholder.svg"}
+                  src={cat.images?.[0] || "/placeholder.svg"}
                   alt={cat.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"

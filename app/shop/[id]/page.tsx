@@ -5,39 +5,65 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { ShoppingBag, Heart, ChevronRight, Ruler, ShieldCheck, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useParams } from "next/navigation"
 
-const product = {
-  id: 1,
-  name: "Minimalist Wool Overcoat",
-  price: 590,
-  category: "Outerwear",
-  description:
-    "A timeless silhouette meticulously crafted from premium virgin wool. This overcoat features a structured shoulder, clean lines, and a subtle charcoal texture that defines modern sophistication.",
-  details: [
-    "100% Virgin Wool",
-    "Tailored classic fit",
-    "Full internal silk lining",
-    "Deep welt pockets",
-    "Sustainable sourcing",
-  ],
-  images: [
-    "/minimal-wool-coat-front.jpg",
-    "/minimal-wool-coat-back.jpg",
-    "/high-fashion-model-in-luxury-minimal-clothing-edit.jpg",
-    "/luxury-minimalist-factory-sustainable-craft.jpg",
-  ],
-  sizes: ["XS", "S", "M", "L", "XL"],
-  colors: [
-    { name: "Charcoal", hex: "#111111" },
-    { name: "Sand", hex: "#C2A875" },
-    { name: "Sage", hex: "#9FB8A0" },
-  ],
+interface Product {
+  _id: string
+  name: string
+  price: number
+  category: string
+  description: string
+  images: string[]
+  sizes?: string[]
+  stock: number
+  featured: boolean
 }
 
 export default function ProductPage() {
-  const [selectedSize, setSelectedSize] = React.useState("M")
-  const [selectedColor, setSelectedColor] = React.useState(product.colors[0])
+  const params = useParams()
+  const [product, setProduct] = React.useState<Product | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [selectedSize, setSelectedSize] = React.useState("")
   const [activeImage, setActiveImage] = React.useState(0)
+
+  React.useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`/api/products/${params.id}`)
+        if (res.ok) {
+          const data = await res.json()
+          setProduct(data)
+          if (data.sizes && data.sizes.length > 0) {
+            setSelectedSize(data.sizes[0])
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (params.id) {
+      fetchProduct()
+    }
+  }, [params.id])
+
+  if (loading) {
+    return (
+      <div className="pt-24 pb-24 bg-background min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading product...</p>
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div className="pt-24 pb-24 bg-background min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Product not found</p>
+      </div>
+    )
+  }
 
   return (
     <div className="pt-24 pb-24 bg-background min-h-screen">
@@ -58,22 +84,24 @@ export default function ProductPage() {
         {/* Image Gallery */}
         <div className="lg:w-3/5 flex flex-col md:flex-row gap-6">
           {/* Thumbnails */}
-          <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto no-scrollbar">
-            {product.images.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveImage(i)}
-                className={cn(
-                  "relative w-20 h-28 flex-shrink-0 rounded-sm overflow-hidden border smooth-transition",
-                  activeImage === i
-                    ? "border-primary opacity-100 scale-105"
-                    : "border-transparent opacity-60 hover:opacity-100",
-                )}
-              >
-                <Image src={img || "/placeholder.svg"} alt={`View ${i + 1}`} fill className="object-cover" />
-              </button>
-            ))}
-          </div>
+          {product.images && product.images.length > 1 && (
+            <div className="order-2 md:order-1 flex md:flex-col gap-4 overflow-x-auto no-scrollbar">
+              {product.images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImage(i)}
+                  className={cn(
+                    "relative w-20 h-28 flex-shrink-0 rounded-sm overflow-hidden border smooth-transition",
+                    activeImage === i
+                      ? "border-primary opacity-100 scale-105"
+                      : "border-transparent opacity-60 hover:opacity-100",
+                  )}
+                >
+                  <Image src={img || "/placeholder.svg"} alt={`View ${i + 1}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Main Image */}
           <div className="order-1 md:order-2 flex-grow relative aspect-[3/4] bg-[#F2F2F2] rounded-sm overflow-hidden group">
@@ -85,7 +113,7 @@ export default function ProductPage() {
               className="w-full h-full"
             >
               <Image
-                src={product.images[activeImage] || "/placeholder.svg"}
+                src={product.images?.[activeImage] || "/placeholder.svg"}
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -105,67 +133,45 @@ export default function ProductPage() {
             <h1 className="text-4xl md:text-5xl font-serif italic mb-6 leading-tight">{product.name}</h1>
             <p className="text-2xl font-light tracking-widest mb-8">${product.price}.00</p>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">{product.description}</p>
-          </div>
-
-          {/* Color Selection */}
-          <div className="mb-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold">
-                Color: <span className="font-light ml-2">{selectedColor.name}</span>
-              </h3>
-            </div>
-            <div className="flex gap-4">
-              {product.colors.map((color) => (
-                <button
-                  key={color.name}
-                  onClick={() => setSelectedColor(color)}
-                  className={cn(
-                    "w-10 h-10 rounded-full p-1 border smooth-transition",
-                    selectedColor.name === color.name
-                      ? "border-primary scale-110"
-                      : "border-transparent hover:scale-105",
-                  )}
-                >
-                  <div
-                    className="w-full h-full rounded-full border border-black/5"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                </button>
-              ))}
-            </div>
+            <p className="text-sm text-gray-600 mb-4">Stock: {product.stock} available</p>
           </div>
 
           {/* Size Selection */}
-          <div className="mb-12">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold">Size</h3>
-              <button className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] hover:text-accent smooth-transition">
-                <Ruler size={14} /> Size Guide
-              </button>
-            </div>
-            <div className="grid grid-cols-5 gap-3">
-              {product.sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={cn(
-                    "py-3 border text-xs smooth-transition",
-                    selectedSize === size
-                      ? "bg-primary text-white border-primary"
-                      : "border-border hover:border-primary",
-                  )}
-                >
-                  {size}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="mb-12">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xs uppercase tracking-[0.2em] font-bold">Size</h3>
+                <button className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] hover:text-accent smooth-transition">
+                  <Ruler size={14} /> Size Guide
                 </button>
-              ))}
+              </div>
+              <div className="grid grid-cols-5 gap-3">
+                {product.sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={cn(
+                      "py-3 border text-xs smooth-transition",
+                      selectedSize === size
+                        ? "bg-primary text-white border-primary"
+                        : "border-border hover:border-primary",
+                    )}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Actions */}
           <div className="space-y-4 mb-16">
-            <button className="w-full bg-primary text-primary-foreground py-5 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-3 hover:bg-accent hover:text-white transition-all duration-500 transform active:scale-[0.98]">
+            <button 
+              className="w-full bg-primary text-primary-foreground py-5 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-3 hover:bg-accent hover:text-white transition-all duration-500 transform active:scale-[0.98] disabled:opacity-50"
+              disabled={product.stock === 0}
+            >
               <ShoppingBag size={18} />
-              Add to Bag
+              {product.stock === 0 ? 'Out of Stock' : 'Add to Bag'}
             </button>
             <button className="w-full border border-primary py-5 text-xs uppercase tracking-[0.3em] font-bold hover:bg-primary hover:text-white smooth-transition">
               Find in Store
@@ -191,29 +197,6 @@ export default function ProductPage() {
           </div>
         </div>
       </div>
-
-      {/* Recommended Section */}
-      <section className="mt-32 pt-24 border-t border-black/5 px-6 md:px-12 max-w-screen-2xl mx-auto">
-        <h2 className="text-3xl font-serif italic mb-16 text-center">Complete the Look</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="group cursor-pointer">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-[#F2F2F2] mb-4">
-                <Image
-                  src={`/fashion-accessory-.jpg?height=600&width=450&query=fashion-accessory-${i}`}
-                  alt="Recommended"
-                  fill
-                  className="object-cover group-hover:scale-110 smooth-transition"
-                />
-              </div>
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-1 group-hover:text-accent smooth-transition">
-                Matching Accessory {i}
-              </h3>
-              <p className="text-[10px] text-muted-foreground">$120</p>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   )
 }

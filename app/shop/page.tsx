@@ -7,72 +7,72 @@ import Link from "next/link"
 import { LayoutGrid, List, SlidersHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const products = [
-  {
-    id: 1,
-    name: "Minimalist Wool Overcoat",
-    price: 590,
-    category: "Outerwear",
-    image: "/minimal-wool-coat-front.jpg",
-    hoverImage: "/minimal-wool-coat-back.jpg",
-    colors: ["#111111", "#6B6B6B", "#C2A875"],
-  },
-  {
-    id: 2,
-    name: "Silk Blend Evening Shirt",
-    price: 240,
-    category: "Tops",
-    image: "/silk-shirt-front.jpg",
-    hoverImage: "/silk-shirt-detail.jpg",
-    colors: ["#FAFAFA", "#111111"],
-  },
-  {
-    id: 3,
-    name: "Structured Cotton Trousers",
-    price: 320,
-    category: "Bottoms",
-    image: "/luxury-trousers-front.jpg",
-    hoverImage: "/luxury-trousers-back.jpg",
-    colors: ["#6B6B6B", "#2B2B2B"],
-  },
-  {
-    id: 4,
-    name: "Cashmere Turtleneck",
-    price: 450,
-    category: "Knitwear",
-    image: "/cashmere-knit-front.jpg",
-    hoverImage: "/cashmere-knit-detail.jpg",
-    colors: ["#111111", "#C2A875", "#9FB8A0"],
-  },
-  {
-    id: 5,
-    name: "Leather Chelsea Boots",
-    price: 480,
-    category: "Footwear",
-    image: "/leather-boots-front.jpg",
-    hoverImage: "/leather-boots-detail.jpg",
-    colors: ["#111111", "#3D2B1F"],
-  },
-  {
-    id: 6,
-    name: "Linen Utility Jacket",
-    price: 380,
-    category: "Outerwear",
-    image: "/linen-jacket-front.jpg",
-    hoverImage: "/linen-jacket-detail.jpg",
-    colors: ["#9FB8A0", "#C2A875"],
-  },
-]
+interface Product {
+  _id: string
+  name: string
+  price: number
+  category: string
+  description: string
+  images: string[]
+  stock: number
+  featured: boolean
+  sizes?: string[]
+}
 
-const categories = ["All", "Outerwear", "Tops", "Bottoms", "Knitwear", "Footwear"]
-const sizes = ["XS", "S", "M", "L", "XL"]
+interface Category {
+  _id: string
+  name: string
+  description: string
+  status: string
+}
 
 export default function ShopPage() {
+  const [products, setProducts] = React.useState<Product[]>([])
+  const [categories, setCategories] = React.useState<Category[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [activeCategory, setActiveCategory] = React.useState("All")
   const [isFilterOpen, setIsFilterOpen] = React.useState(false)
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
 
-  const filteredProducts = products.filter((p) => activeCategory === "All" || p.category === activeCategory)
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch products
+        const productsRes = await fetch('/api/products')
+        if (productsRes.ok) {
+          const productsData = await productsRes.json()
+          setProducts(productsData)
+        }
+
+        // Fetch categories
+        const categoriesRes = await fetch('/api/categories')
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json()
+          setCategories(categoriesData.filter((cat: Category) => cat.status === 'active'))
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const filteredProducts = products.filter((p) => 
+    activeCategory === "All" || p.category === activeCategory
+  )
+
+  const categoryNames = ["All", ...categories.map(cat => cat.name)]
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading products...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen">
@@ -87,7 +87,7 @@ export default function ShopPage() {
       {/* Toolbar */}
       <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-y border-black/5 py-6">
         <div className="flex items-center gap-8 overflow-x-auto no-scrollbar w-full md:w-auto">
-          {categories.map((cat) => (
+          {categoryNames.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -142,28 +142,19 @@ export default function ShopPage() {
             >
               <div className="sticky top-32 space-y-10">
                 <div>
-                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-6">Size</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {sizes.map((size) => (
+                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-6">Categories</h3>
+                  <div className="space-y-2">
+                    {categories.map((category) => (
                       <button
-                        key={size}
-                        className="w-10 h-10 border border-border text-[10px] flex items-center justify-center hover:border-primary smooth-transition"
+                        key={category._id}
+                        onClick={() => setActiveCategory(category.name)}
+                        className={cn(
+                          "block w-full text-left text-sm py-2 px-3 rounded hover:bg-gray-50 smooth-transition",
+                          activeCategory === category.name ? "bg-primary text-white" : "text-muted-foreground"
+                        )}
                       >
-                        {size}
+                        {category.name}
                       </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-6">Color</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {["#111111", "#FAFAFA", "#C2A875", "#9FB8A0", "#6B6B6B"].map((color) => (
-                      <button
-                        key={color}
-                        className="w-6 h-6 rounded-full border border-black/5 hover:scale-110 smooth-transition"
-                        style={{ backgroundColor: color }}
-                      />
                     ))}
                   </div>
                 </div>
@@ -188,72 +179,100 @@ export default function ShopPage() {
 
         {/* Product Grid */}
         <div className="flex-grow">
-          <motion.div
-            layout
-            className={cn(
-              "grid gap-x-8 gap-y-16",
-              viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1",
-            )}
-          >
-            {filteredProducts.map((product, i) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className={cn("group cursor-pointer", viewMode === "list" && "flex gap-8 items-center")}
-              >
-                <Link
-                  href={`/shop/${product.id}`}
-                  className={cn(
-                    "block relative overflow-hidden bg-[#F2F2F2] rounded-sm",
-                    viewMode === "list" ? "w-48 h-64" : "aspect-[3/4] mb-6",
-                  )}
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-lg mb-4">No products found</p>
+              <p className="text-sm text-muted-foreground">Try selecting a different category or add products in the admin panel</p>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className={cn(
+                "grid gap-x-8 gap-y-16",
+                viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1",
+              )}
+            >
+              {filteredProducts.map((product, i) => (
+                <motion.div
+                  key={product._id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className={cn("group cursor-pointer", viewMode === "list" && "flex gap-8 items-center")}
                 >
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-opacity duration-700 group-hover:opacity-0"
-                  />
-                  <Image
-                    src={product.hoverImage || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-                  />
-                </Link>
-
-                <div className={cn("flex-grow", viewMode === "grid" ? "text-center" : "text-left")}>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-                    {product.category}
-                  </p>
-                  <h3 className="text-xl font-serif italic mb-2 group-hover:text-accent smooth-transition">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm font-medium tracking-widest">${product.price}</p>
-
-                  {viewMode === "list" && (
-                    <p className="mt-4 text-sm text-muted-foreground max-w-md leading-relaxed">
-                      Expertly crafted from premium materials, this piece embodies our commitment to timeless design and
-                      exceptional quality.
-                    </p>
-                  )}
-
-                  <div className={cn("mt-4 flex gap-1", viewMode === "grid" ? "justify-center" : "justify-start")}>
-                    {product.colors.map((c) => (
-                      <div
-                        key={c}
-                        className="w-2 h-2 rounded-full border border-black/5"
-                        style={{ backgroundColor: c }}
+                  <Link
+                    href={`/shop/${product._id}`}
+                    className={cn(
+                      "block relative overflow-hidden bg-[#F2F2F2] rounded-sm",
+                      viewMode === "list" ? "w-48 h-64" : "aspect-[3/4] mb-6",
+                    )}
+                  >
+                    <Image
+                      src={product.images?.[0] || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-cover transition-opacity duration-700 group-hover:opacity-0"
+                    />
+                    {product.images?.[1] && (
+                      <Image
+                        src={product.images[1]}
+                        alt={product.name}
+                        fill
+                        className="object-cover absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
                       />
-                    ))}
+                    )}
+                    
+                    {/* Stock indicator */}
+                    {product.stock === 0 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">Out of Stock</span>
+                      </div>
+                    )}
+                    
+                    {/* Featured badge */}
+                    {product.featured && (
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-accent text-white text-xs px-2 py-1 rounded-full">
+                          Featured
+                        </span>
+                      </div>
+                    )}
+                  </Link>
+
+                  <div className={cn("flex-grow", viewMode === "grid" ? "text-center" : "text-left")}>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                      {product.category}
+                    </p>
+                    <h3 className="text-xl font-serif italic mb-2 group-hover:text-accent smooth-transition">
+                      {product.name}
+                    </h3>
+                    <p className="text-sm font-medium tracking-widest">${product.price}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Stock: {product.stock}</p>
+
+                    {viewMode === "list" && (
+                      <p className="mt-4 text-sm text-muted-foreground max-w-md leading-relaxed">
+                        {product.description}
+                      </p>
+                    )}
+
+                    {product.sizes && product.sizes.length > 0 && (
+                      <div className={cn("mt-4 flex gap-1", viewMode === "grid" ? "justify-center" : "justify-start")}>
+                        {product.sizes.slice(0, 3).map((size) => (
+                          <span key={size} className="text-xs px-2 py-1 border border-gray-300 rounded">
+                            {size}
+                          </span>
+                        ))}
+                        {product.sizes.length > 3 && (
+                          <span className="text-xs text-muted-foreground">+{product.sizes.length - 3}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
