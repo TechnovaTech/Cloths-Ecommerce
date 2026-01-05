@@ -7,6 +7,7 @@ import { Heart, ShoppingBag, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useWishlist } from "@/contexts/WishlistContext"
 import { useCart } from "@/contexts/CartContext"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Product {
   _id: string
@@ -23,6 +24,7 @@ interface Product {
 export default function WishlistPage() {
   const { wishlist, removeFromWishlist } = useWishlist()
   const { addToCart } = useCart()
+  const { user } = useAuth()
   const [products, setProducts] = React.useState<Product[]>([])
   const [loading, setLoading] = React.useState(true)
 
@@ -44,8 +46,15 @@ export default function WishlistPage() {
         })
 
         if (response.ok) {
-          const data = await response.json()
-          setProducts(data.products || [])
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json()
+            setProducts(data.products || [])
+          } else {
+            console.error('Response is not JSON:', await response.text())
+          }
+        } else {
+          console.error('API request failed:', response.status)
         }
       } catch (error) {
         console.error('Error fetching wishlist products:', error)
@@ -62,6 +71,11 @@ export default function WishlistPage() {
   }
 
   const moveToCart = (product: Product) => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    
     try {
       addToCart({
         _id: product._id,

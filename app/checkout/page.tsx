@@ -4,6 +4,8 @@ import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, CreditCard, Lock, Truck } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { useCart } from "@/contexts/CartContext"
 
 const cartItems = [
   {
@@ -28,10 +30,38 @@ const cartItems = [
 
 export default function CheckoutPage() {
   const [step, setStep] = React.useState(1)
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const shipping = 0
-  const tax = Math.round(subtotal * 0.08)
-  const total = subtotal + shipping + tax
+  const { user } = useAuth()
+  const { cart, cartTotal } = useCart()
+  const [formData, setFormData] = React.useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  })
+
+  // Auto-fill user data when component mounts
+  React.useEffect(() => {
+    if (user) {
+      const nameParts = user.name.split(' ')
+      setFormData(prev => ({
+        ...prev,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.email || ''
+      }))
+    }
+  }, [user])
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const shipping = cartTotal > 300 ? 0 : 25
+  const tax = Math.round(cartTotal * 0.08)
+  const total = cartTotal + shipping + tax
 
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-[#FAFAFA] min-h-screen">
@@ -77,38 +107,75 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">First Name</label>
-                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                    <input 
+                      type="text" 
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Last Name</label>
-                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                    <input 
+                      type="text" 
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" 
+                    />
                   </div>
                 </div>
 
                 <div className="mb-6">
                   <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Email Address</label>
-                  <input type="email" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  <input 
+                    type="email" 
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" 
+                  />
                 </div>
 
                 <div className="mb-6">
                   <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">Address</label>
-                  <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                  <input 
+                    type="text" 
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" 
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <div>
                     <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">City</label>
-                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                    <input 
+                      type="text" 
+                      value={formData.city}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">State</label>
-                    <select className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none">
-                      <option>Select State</option>
+                    <select 
+                      value={formData.state}
+                      onChange={(e) => handleInputChange('state', e.target.value)}
+                      className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none"
+                    >
+                      <option value="">Select State</option>
+                      <option value="CA">California</option>
+                      <option value="NY">New York</option>
+                      <option value="TX">Texas</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-[0.2em] font-bold mb-2">ZIP Code</label>
-                    <input type="text" className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" />
+                    <input 
+                      type="text" 
+                      value={formData.zipCode}
+                      onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                      className="w-full p-3 border border-border rounded-sm focus:border-primary focus:outline-none" 
+                    />
                   </div>
                 </div>
 
@@ -171,17 +238,20 @@ export default function CheckoutPage() {
                 <h2 className="text-2xl font-serif italic mb-8">Review Your Order</h2>
                 
                 <div className="space-y-6 mb-8">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-4 pb-6 border-b border-border last:border-0">
+                  {cart.map((item) => (
+                    <div key={item._id} className="flex gap-4 pb-6 border-b border-border last:border-0">
                       <div className="w-20 h-24 bg-[#F2F2F2] rounded-sm overflow-hidden">
                         <Image src={item.image} alt={item.name} width={80} height={96} className="object-cover w-full h-full" />
                       </div>
                       <div className="flex-grow">
                         <h3 className="font-serif text-lg mb-1">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">Size: {item.size} | Color: {item.color}</p>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {item.size && `Size: ${item.size}`}
+                          {item.color && ` | Color: ${item.color}`}
+                        </p>
                         <div className="flex justify-between">
                           <span className="text-sm">Qty: {item.quantity}</span>
-                          <span className="font-medium">${item.price * item.quantity}</span>
+                          <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -212,11 +282,11 @@ export default function CheckoutPage() {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span className="text-sm">Subtotal</span>
-                  <span className="text-sm">${subtotal}</span>
+                  <span className="text-sm">${cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Shipping</span>
-                  <span className="text-sm text-green-600">Free</span>
+                  <span className="text-sm">{shipping === 0 ? 'Free' : `$${shipping}`}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Tax</span>
@@ -225,7 +295,7 @@ export default function CheckoutPage() {
                 <div className="border-t border-border pt-4">
                   <div className="flex justify-between font-medium text-lg">
                     <span>Total</span>
-                    <span>${total}</span>
+                    <span>${total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

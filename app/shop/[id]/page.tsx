@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { useParams, useRouter } from "next/navigation"
 import { useWishlist } from "@/contexts/WishlistContext"
 import { useCart } from "@/contexts/CartContext"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Product {
   _id: string
@@ -33,6 +34,7 @@ export default function ProductPage() {
   const [showSuccessMessage, setShowSuccessMessage] = React.useState(false)
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { addToCart } = useCart()
+  const { user } = useAuth()
 
   const handleWishlistToggle = () => {
     if (!product) return
@@ -51,6 +53,12 @@ export default function ProductPage() {
 
   const handleAddToCart = () => {
     if (!product) return
+    
+    // Check if user is logged in
+    if (!user) {
+      router.push('/login')
+      return
+    }
     
     const finalPrice = product.discount && product.discount > 0 
       ? product.discountType === 'percentage' 
@@ -81,6 +89,8 @@ export default function ProductPage() {
           if (data.sizes && data.sizes.length > 0) {
             setSelectedSize(data.sizes[0])
           }
+        } else {
+          console.error('Failed to fetch product:', res.status)
         }
       } catch (error) {
         console.error('Error fetching product:', error)

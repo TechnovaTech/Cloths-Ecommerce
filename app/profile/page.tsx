@@ -2,8 +2,12 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { User, Package, Heart, Settings, MapPin, CreditCard, Bell, LogOut, Edit3 } from "lucide-react"
+import Link from "next/link"
+import { User, Package, Heart, Settings, MapPin, CreditCard, Bell, LogOut, Edit3, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthContext"
+import { useWishlist } from "@/contexts/WishlistContext"
+import { useCart } from "@/contexts/CartContext"
 
 const recentOrders = [
   {
@@ -44,6 +48,73 @@ const menuItems = [
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = React.useState("Profile")
+  const { user, logout } = useAuth()
+  const { wishlist, wishlistCount } = useWishlist()
+  const { cartCount } = useCart()
+  const [orders, setOrders] = React.useState([])
+  const [wishlistProducts, setWishlistProducts] = React.useState([])
+
+  // Fetch user orders
+  React.useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return
+      try {
+        const response = await fetch('/api/orders')
+        if (response.ok) {
+          const data = await response.json()
+          setOrders(data.orders || [])
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error)
+      }
+    }
+    fetchOrders()
+  }, [user])
+
+  // Fetch wishlist products
+  React.useEffect(() => {
+    const fetchWishlistProducts = async () => {
+      if (wishlist.length === 0) return
+      try {
+        const productIds = wishlist.map(item => item._id)
+        const response = await fetch('/api/products/wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productIds })
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setWishlistProducts(data.products || [])
+        }
+      } catch (error) {
+        console.error('Error fetching wishlist products:', error)
+      }
+    }
+    fetchWishlistProducts()
+  }, [wishlist])
+
+  const menuItems = [
+    { icon: User, label: "Profile", active: true },
+    { icon: Package, label: "Orders", count: orders.length },
+    { icon: Heart, label: "Wishlist", count: wishlistCount },
+    { icon: MapPin, label: "Addresses" },
+    { icon: CreditCard, label: "Payment Methods" },
+    { icon: Bell, label: "Notifications" },
+    { icon: Settings, label: "Settings" },
+  ]
+
+  if (!user) {
+    return (
+      <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-serif italic mb-4">Please log in to view your profile</h2>
+          <Link href="/login" className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent">
+            Login
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen">
@@ -70,8 +141,8 @@ export default function ProfilePage() {
                     className="object-cover"
                   />
                 </div>
-                <h3 className="font-serif text-lg mb-1">Alexandra Chen</h3>
-                <p className="text-sm text-muted-foreground mb-4">Premium Member</p>
+                <h3 className="font-serif text-lg mb-1">{user.name}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{user.email}</p>
                 <button className="text-xs uppercase tracking-[0.2em] font-bold text-primary hover:text-accent smooth-transition flex items-center gap-2 mx-auto">
                   <Edit3 size={12} />
                   Edit Profile
@@ -107,7 +178,7 @@ export default function ProfilePage() {
                 ))}
                 
                 <button 
-                  onClick={() => window.location.href = '/login'}
+                  onClick={logout}
                   className="w-full flex items-center gap-3 p-4 text-left text-red-500 hover:bg-red-50 smooth-transition rounded-sm"
                 >
                   <LogOut size={18} />
@@ -133,27 +204,27 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground mb-2 block">
-                        First Name
+                        Full Name
                       </label>
-                      <p className="text-lg">Alexandra</p>
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground mb-2 block">
-                        Last Name
-                      </label>
-                      <p className="text-lg">Chen</p>
+                      <p className="text-lg">{user.name}</p>
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground mb-2 block">
                         Email
                       </label>
-                      <p className="text-lg">alexandra.chen@email.com</p>
+                      <p className="text-lg">{user.email}</p>
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground mb-2 block">
-                        Phone
+                        Member Since
                       </label>
-                      <p className="text-lg">+1 (555) 123-4567</p>
+                      <p className="text-lg">{new Date(user.createdAt || Date.now()).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-[0.2em] font-bold text-muted-foreground mb-2 block">
+                        Account Type
+                      </label>
+                      <p className="text-lg capitalize">{user.role || 'Customer'}</p>
                     </div>
                   </div>
                 </div>
@@ -168,37 +239,36 @@ export default function ProfilePage() {
                   </div>
                   
                   <div className="space-y-4">
-                    {recentOrders.map((order) => (
-                      <div key={order.id} className="flex items-center gap-4 p-4 border border-border rounded-sm hover:bg-[#FAFAFA] smooth-transition">
+                    {orders.length > 0 ? orders.slice(0, 3).map((order) => (
+                      <div key={order._id} className="flex items-center gap-4 p-4 border border-border rounded-sm hover:bg-[#FAFAFA] smooth-transition">
                         <div className="w-16 h-20 bg-[#F2F2F2] rounded-sm overflow-hidden flex-shrink-0">
-                          <Image
-                            src={order.image}
-                            alt="Order item"
-                            width={64}
-                            height={80}
-                            className="object-cover w-full h-full"
-                          />
+                          <Package size={24} className="w-full h-full p-4 text-gray-400" />
                         </div>
                         <div className="flex-grow">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <p className="font-medium">{order.id}</p>
-                              <p className="text-sm text-muted-foreground">{order.date}</p>
+                              <p className="font-medium">{order._id}</p>
+                              <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
                             </div>
-                            <span className={cn(
-                              "text-xs px-2 py-1 rounded-full",
-                              order.status === "Delivered" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
-                            )}>
-                              {order.status}
+                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                              {order.status || 'Completed'}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <p className="text-sm text-muted-foreground">{order.items} items</p>
-                            <p className="font-medium">${order.total}</p>
+                            <p className="text-sm text-muted-foreground">{order.items?.length || 1} items</p>
+                            <p className="font-medium">${order.total || 0}</p>
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center py-8">
+                        <Package size={48} className="mx-auto mb-4 text-gray-300" />
+                        <p className="text-muted-foreground mb-4">No orders yet</p>
+                        <Link href="/shop" className="px-4 py-2 bg-primary text-white rounded-sm hover:bg-accent">
+                          Start Shopping
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -208,16 +278,16 @@ export default function ProfilePage() {
                   <p className="mb-6 opacity-90">Enjoy exclusive benefits including free shipping, early access to collections, and personalized styling services.</p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center">
-                      <p className="text-2xl font-bold mb-1">$2,340</p>
-                      <p className="text-sm opacity-75">Total Spent</p>
+                      <p className="text-2xl font-bold mb-1">{orders.length}</p>
+                      <p className="text-sm opacity-75">Total Orders</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold mb-1">12</p>
-                      <p className="text-sm opacity-75">Orders Placed</p>
+                      <p className="text-2xl font-bold mb-1">{wishlistCount}</p>
+                      <p className="text-sm opacity-75">Wishlist Items</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold mb-1">$160</p>
-                      <p className="text-sm opacity-75">Savings This Year</p>
+                      <p className="text-2xl font-bold mb-1">{cartCount}</p>
+                      <p className="text-sm opacity-75">Cart Items</p>
                     </div>
                   </div>
                 </div>
@@ -227,14 +297,75 @@ export default function ProfilePage() {
             {activeTab === "Orders" && (
               <div className="bg-white border border-border rounded-sm p-8">
                 <h2 className="text-2xl font-serif italic mb-6">Order History</h2>
-                <p className="text-muted-foreground">Your complete order history will be displayed here.</p>
+                {orders.length > 0 ? (
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <div key={order._id} className="border border-border rounded-sm p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="font-medium text-lg">Order #{order._id}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                            {order.status || 'Completed'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-muted-foreground">{order.items?.length || 1} items</p>
+                          <p className="text-xl font-medium">${order.total || 0}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Package size={64} className="mx-auto mb-4 text-gray-300" />
+                    <p className="text-muted-foreground mb-4">No orders found</p>
+                    <Link href="/shop" className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent">
+                      Start Shopping
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
             {activeTab === "Wishlist" && (
               <div className="bg-white border border-border rounded-sm p-8">
                 <h2 className="text-2xl font-serif italic mb-6">Saved Items</h2>
-                <p className="text-muted-foreground">Your wishlist items will be displayed here.</p>
+                {wishlistProducts.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {wishlistProducts.map((product) => (
+                      <div key={product._id} className="border border-border rounded-sm p-4">
+                        <div className="aspect-[3/4] bg-[#F2F2F2] rounded-sm mb-4 overflow-hidden">
+                          <Image
+                            src={product.images?.[0] || '/placeholder.svg'}
+                            alt={product.name}
+                            width={200}
+                            height={250}
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                        <h3 className="font-serif text-lg mb-2">{product.name}</h3>
+                        <p className="text-muted-foreground mb-4">${product.price}</p>
+                        <Link 
+                          href={`/shop/${product._id}`}
+                          className="w-full bg-black text-white py-2 px-4 rounded-sm hover:bg-[#c2a875] transition-colors flex items-center justify-center gap-2"
+                        >
+                          <ShoppingBag size={16} />
+                          View Product
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Heart size={64} className="mx-auto mb-4 text-gray-300" />
+                    <p className="text-muted-foreground mb-4">No items in wishlist</p>
+                    <Link href="/shop" className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent">
+                      Browse Products
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
