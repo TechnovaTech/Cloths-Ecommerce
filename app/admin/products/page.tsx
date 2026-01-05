@@ -67,21 +67,6 @@ export default function ProductsAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    const formData = {
-      ...productForm,
-      price: Number(productForm.price),
-      stock: Number(productForm.stock),
-      minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
-      maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
-      discount: productForm.discount ? Number(productForm.discount) : undefined,
-      images: productForm.images.filter(img => img !== ""),
-      offerTag: productForm.offerTag || ""
-    }
-    
-    console.log('Submitting product data:', formData)
-    console.log('Offer tag value:', productForm.offerTag)
-    
     try {
       const url = editingProduct ? `/api/products/${editingProduct._id}` : '/api/products'
       const method = editingProduct ? 'PUT' : 'POST'
@@ -97,36 +82,15 @@ export default function ProductsAdmin() {
         images: productForm.images.filter(img => img !== "")
       }
       
-      console.log('Submitting product data:', productData)
-      
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
         body: JSON.stringify(productData)
       })
 
       if (res.ok) {
-        const savedProduct = await res.json()
-        console.log('Product saved successfully:', savedProduct)
         fetchProducts()
         resetForm()
-      } else {
-        const error = await res.json()
-        console.error('Error saving product:', error)
-=======
-        body: JSON.stringify(formData)
-      })
-
-      if (res.ok) {
-        const result = await res.json()
-        console.log('Server response:', result)
-        fetchProducts()
-        resetForm()
-      } else {
-        const errorText = await res.text()
-        console.error('Server error:', errorText)
->>>>>>> 6269e0ee85210d41ae636f123ebedaae6982964e
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -188,21 +152,11 @@ export default function ProductsAdmin() {
     setShowModal(false)
   }
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <AdminLayout title="Products" subtitle="Loading...">
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Checking authentication...</p>
-        </div>
-      </AdminLayout>
-    )
-  }
-
-  if (loading) {
-    return (
-      <AdminLayout title="Products" subtitle="Loading...">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading products...</p>
+          <p className="text-gray-500">Loading...</p>
         </div>
       </AdminLayout>
     )
@@ -232,8 +186,6 @@ export default function ProductsAdmin() {
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Discount</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Stock</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Category</th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Offer Tag</th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Featured</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
               </tr>
             </thead>
@@ -271,22 +223,6 @@ export default function ProductsAdmin() {
                   <td className="py-4 px-6 text-gray-700">{product.stock}</td>
                   <td className="py-4 px-6 text-gray-700">{product.category}</td>
                   <td className="py-4 px-6">
-                    {product.offerTag ? (
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                        {product.offerTag}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400">No Tag</span>
-                    )}
-                  </td>
-                  <td className="py-4 px-6">
-                    {product.featured && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-accent text-white">
-                        Featured
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEdit(product)}
@@ -309,7 +245,6 @@ export default function ProductsAdmin() {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-sm w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
@@ -335,19 +270,6 @@ export default function ProductsAdmin() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
                     placeholder="Enter product name"
                     required
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    SKU / Product ID
-                  </label>
-                  <input
-                    type="text"
-                    value={productForm.sku}
-                    onChange={(e) => setProductForm({...productForm, sku: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="SKU-001"
                   />
                 </div>
                 
@@ -397,47 +319,6 @@ export default function ProductsAdmin() {
                     ))}
                   </select>
                 </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Offer Tag
-                  </label>
-                  <select
-                    value={productForm.offerTag}
-                    onChange={(e) => setProductForm({...productForm, offerTag: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  >
-                    <option value="">No Tag</option>
-                    <option value="New Arrival">New Arrival</option>
-                    <option value="Best Seller">Best Seller</option>
-                    <option value="Limited Offer">Limited Offer</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Available Sizes
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                    <label key={size} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={productForm.sizes?.includes(size) || false}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setProductForm({...productForm, sizes: [...(productForm.sizes || []), size]})
-                          } else {
-                            setProductForm({...productForm, sizes: (productForm.sizes || []).filter(s => s !== size)})
-                          }
-                        }}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-sm">{size}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
               
               <div>
@@ -453,92 +334,6 @@ export default function ProductsAdmin() {
                 />
               </div>
 
-              <div>
-                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Product Images (5 Images)
-                </label>
-                <div className="grid grid-cols-3 gap-4">
-                  {[0, 1, 2, 3, 4].map((index) => (
-                    <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center hover:border-accent smooth-transition">
-                      <label className="text-xs text-gray-600 mb-2 block">
-                        Image {index + 1}
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) {
-                            const reader = new FileReader()
-                            reader.onload = (event) => {
-                              const base64 = event.target.result
-                              const newImages = [...productForm.images]
-                              newImages[index] = base64
-                              setProductForm({...productForm, images: newImages})
-                            }
-                            reader.readAsDataURL(file)
-                          }
-                        }}
-                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
-                      />
-                      {productForm.images[index] && (
-                        <div className="mt-2">
-                          <img src={productForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={productForm.featured}
-                    onChange={(e) => setProductForm({...productForm, featured: e.target.checked})}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-xs uppercase tracking-widest font-bold text-gray-700">
-                    Featured Product
-                  </span>
-                </label>
-              </div>
-
-              {/* Stock Management */}
-              <div>
-                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Stock Management (Optional)
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-gray-600 mb-1 block">
-                      Minimum Stock Alert
-                    </label>
-                    <input
-                      type="number"
-                      value={productForm.minStock}
-                      onChange={(e) => setProductForm({...productForm, minStock: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-600 mb-1 block">
-                      Maximum Stock Limit
-                    </label>
-                    <input
-                      type="number"
-                      value={productForm.maxStock}
-                      onChange={(e) => setProductForm({...productForm, maxStock: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
-                      placeholder="1000"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Discount Management */}
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
                   Discount Management (Optional)
@@ -571,18 +366,67 @@ export default function ProductsAdmin() {
                   </div>
                 </div>
               </div>
+
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Product Images
+                </label>
+                <div className="grid grid-cols-3 gap-4">
+                  {[0, 1, 2, 3, 4].map((index) => (
+                    <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const reader = new FileReader()
+                            reader.onload = (event) => {
+                              const base64 = event.target.result
+                              const newImages = [...productForm.images]
+                              newImages[index] = base64
+                              setProductForm({...productForm, images: newImages})
+                            }
+                            reader.readAsDataURL(file)
+                          }
+                        }}
+                        className="w-full text-sm"
+                      />
+                      {productForm.images[index] && (
+                        <div className="mt-2">
+                          <img src={productForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={productForm.featured}
+                    onChange={(e) => setProductForm({...productForm, featured: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-xs uppercase tracking-widest font-bold text-gray-700">
+                    Featured Product
+                  </span>
+                </label>
+              </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 smooth-transition"
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent smooth-transition font-bold"
+                  className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent font-bold"
                 >
                   {editingProduct ? 'Update Product' : 'Add Product'}
                 </button>
