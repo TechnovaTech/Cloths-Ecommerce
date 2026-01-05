@@ -17,6 +17,15 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  sku: {
+    type: String,
+    unique: true,
+  },
+  offerTag: {
+    type: String,
+    enum: ['New Arrival', 'Best Seller', 'Limited Offer', ''],
+    default: '',
+  },
   images: [{
     type: String,
   }],

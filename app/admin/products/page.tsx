@@ -18,6 +18,9 @@ export default function ProductsAdmin() {
     price: "",
     category: "",
     stock: "",
+    sku: "",
+    offerTag: "",
+    sizes: [],
     featured: false,
     images: ["", "", "", ""],
     minStock: "",
@@ -179,6 +182,7 @@ export default function ProductsAdmin() {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Product</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Image</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Price</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Stock</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Category</th>
@@ -193,6 +197,18 @@ export default function ProductsAdmin() {
                     <div>
                       <p className="font-medium text-primary">{product.name}</p>
                       <p className="text-sm text-gray-600 truncate max-w-xs">{product.description}</p>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="w-12 h-12 relative rounded overflow-hidden bg-gray-100">
+                      <img
+                        src={product.images?.[0] || "/placeholder.svg"}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg"
+                        }}
+                      />
                     </div>
                   </td>
                   <td className="py-4 px-6 text-gray-700">${product.price}</td>
@@ -259,6 +275,19 @@ export default function ProductsAdmin() {
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    SKU / Product ID
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.sku}
+                    onChange={(e) => setProductForm({...productForm, sku: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                    placeholder="SKU-001"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
                     Price
                   </label>
                   <input
@@ -302,6 +331,47 @@ export default function ProductsAdmin() {
                       </option>
                     ))}
                   </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Offer Tag
+                  </label>
+                  <select
+                    value={productForm.offerTag}
+                    onChange={(e) => setProductForm({...productForm, offerTag: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                  >
+                    <option value="">No Tag</option>
+                    <option value="New Arrival">New Arrival</option>
+                    <option value="Best Seller">Best Seller</option>
+                    <option value="Limited Offer">Limited Offer</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Available Sizes
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
+                    <label key={size} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={productForm.sizes.includes(size)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setProductForm({...productForm, sizes: [...productForm.sizes, size]})
+                          } else {
+                            setProductForm({...productForm, sizes: productForm.sizes.filter(s => s !== size)})
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">{size}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
               
