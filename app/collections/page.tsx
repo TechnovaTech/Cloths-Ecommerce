@@ -149,6 +149,29 @@ export default function CollectionsPage() {
 
   return (
     <div className="pt-32 pb-24 bg-background">
+      {/* Header */}
+      <div className="px-6 md:px-12 mb-16">
+        <div className="max-w-screen-2xl mx-auto">
+          <div className="flex justify-between items-end">
+            <div>
+              <h1 className="text-5xl md:text-6xl font-serif italic mb-4">Collections</h1>
+              <p className="text-muted-foreground text-sm uppercase tracking-[0.2em] max-w-2xl">
+                Curated selections that define modern luxury and timeless elegance
+              </p>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
+              >
+                <Plus size={16} />
+                Add Collection
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section with Latest Collection */}
       {collections.length > 0 && (
         <section className="mb-16">
@@ -195,29 +218,6 @@ export default function CollectionsPage() {
           </div>
         </section>
       )}
-
-      {/* Header */}
-      <div className="px-6 md:px-12 mb-16">
-        <div className="max-w-screen-2xl mx-auto">
-          <div className="flex justify-between items-end">
-            <div>
-              <h1 className="text-5xl md:text-6xl font-serif italic mb-4">Collections</h1>
-              <p className="text-muted-foreground text-sm uppercase tracking-[0.2em] max-w-2xl">
-                Curated selections that define modern luxury and timeless elegance
-              </p>
-            </div>
-            {isAdmin && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
-              >
-                <Plus size={16} />
-                Add Collection
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Collections Grid */}
       <section className="px-6 md:px-12">
