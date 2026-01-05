@@ -96,11 +96,6 @@ export default function ProfilePage() {
   const menuItems = [
     { icon: User, label: "Profile", active: true },
     { icon: Package, label: "Orders", count: orders.length },
-    { icon: Heart, label: "Wishlist", count: wishlistCount },
-    { icon: MapPin, label: "Addresses" },
-    { icon: CreditCard, label: "Payment Methods" },
-    { icon: Bell, label: "Notifications" },
-    { icon: Settings, label: "Settings" },
   ]
 
   if (!user) {
@@ -328,48 +323,6 @@ export default function ProfilePage() {
                 )}
               </div>
             )}
-
-            {activeTab === "Wishlist" && (
-              <div className="bg-white border border-border rounded-sm p-8">
-                <h2 className="text-2xl font-serif italic mb-6">Saved Items</h2>
-                {wishlistProducts.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {wishlistProducts.map((product) => (
-                      <div key={product._id} className="border border-border rounded-sm p-4">
-                        <div className="aspect-[3/4] bg-[#F2F2F2] rounded-sm mb-4 overflow-hidden">
-                          <Image
-                            src={product.images?.[0] || '/placeholder.svg'}
-                            alt={product.name}
-                            width={200}
-                            height={250}
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-                        <h3 className="font-serif text-lg mb-2">{product.name}</h3>
-                        <p className="text-muted-foreground mb-4">${product.price}</p>
-                        <Link 
-                          href={`/shop/${product._id}`}
-                          className="w-full bg-black text-white py-2 px-4 rounded-sm hover:bg-[#c2a875] transition-colors flex items-center justify-center gap-2"
-                        >
-                          <ShoppingBag size={16} />
-                          View Product
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Heart size={64} className="mx-auto mb-4 text-gray-300" />
-                    <p className="text-muted-foreground mb-4">No items in wishlist</p>
-                    <Link href="/shop" className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent">
-                      Browse Products
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Add other tab contents as needed */}
           </div>
         </div>
       </div>
