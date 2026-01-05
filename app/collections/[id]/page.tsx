@@ -6,12 +6,13 @@ import Link from "next/link"
 import { ArrowLeft, Heart, ShoppingBag } from "lucide-react"
 import { useParams } from "next/navigation"
 
-interface Category {
+interface Collection {
   _id: string
   name: string
   description: string
   images: string[]
   status: string
+  products: Product[]
 }
 
 interface Product {
@@ -27,38 +28,26 @@ interface Product {
 
 export default function CollectionDetailPage() {
   const params = useParams()
-  const [category, setCategory] = React.useState<Category | null>(null)
-  const [products, setProducts] = React.useState<Product[]>([])
+  const [collection, setCollection] = React.useState<Collection | null>(null)
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
-    const fetchCategoryAndProducts = async () => {
+    const fetchCollection = async () => {
       try {
-        // Fetch category details
-        const categoryRes = await fetch(`/api/categories/${params.id}`)
-        if (categoryRes.ok) {
-          const categoryData = await categoryRes.json()
-          setCategory(categoryData)
-          
-          // Fetch products in this category
-          const productsRes = await fetch('/api/products')
-          if (productsRes.ok) {
-            const productsData = await productsRes.json()
-            const categoryProducts = productsData.filter(
-              (product: Product) => product.category === categoryData.name
-            )
-            setProducts(categoryProducts)
-          }
+        const res = await fetch(`/api/collections/${params.id}`)
+        if (res.ok) {
+          const data = await res.json()
+          setCollection(data)
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching collection:', error)
       } finally {
         setLoading(false)
       }
     }
 
     if (params.id) {
-      fetchCategoryAndProducts()
+      fetchCollection()
     }
   }, [params.id])
 
@@ -70,7 +59,7 @@ export default function CollectionDetailPage() {
     )
   }
 
-  if (!category) {
+  if (!collection) {
     return (
       <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen">
         <div className="max-w-screen-2xl mx-auto text-center">
@@ -82,6 +71,8 @@ export default function CollectionDetailPage() {
       </div>
     )
   }
+
+  const products = collection.products || []
 
   return (
     <div className="pt-32 pb-24 bg-background">
@@ -102,10 +93,10 @@ export default function CollectionDetailPage() {
                 Collection
               </p>
               <h1 className="text-5xl md:text-6xl font-serif italic mb-6 leading-tight">
-                {category.name}
+                {collection.name}
               </h1>
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                {category.description}
+                {collection.description}
               </p>
               <div className="flex items-center gap-6">
                 <span className="text-sm font-medium">{products.length} pieces</span>
@@ -118,12 +109,20 @@ export default function CollectionDetailPage() {
             </div>
             
             <div className="relative aspect-[4/5] bg-[#F2F2F2] rounded-sm overflow-hidden">
-              <Image
-                src={category.images?.[0] || "/placeholder.svg"}
-                alt={category.name}
-                fill
-                className="object-cover"
-              />
+              {collection.images?.[0]?.startsWith('data:') ? (
+                <img
+                  src={collection.images[0]}
+                  alt={collection.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={collection.images?.[0] || "/placeholder.svg"}
+                  alt={collection.name}
+                  fill
+                  className="object-cover"
+                />
+              )}
             </div>
           </div>
         </div>
@@ -144,19 +143,35 @@ export default function CollectionDetailPage() {
               {products.map((product) => (
                 <div key={product._id} className="group">
                   <Link href={`/shop/${product._id}`} className="block relative aspect-[3/4] mb-6 overflow-hidden bg-[#F2F2F2] rounded-sm">
-                    <Image
-                      src={product.images?.[0] || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-opacity duration-700 group-hover:opacity-0"
-                    />
-                    {product.images?.[1] && (
+                    {product.images?.[0]?.startsWith('data:') ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0"
+                      />
+                    ) : (
                       <Image
-                        src={product.images[1]}
+                        src={product.images?.[0] || "/placeholder.svg"}
                         alt={product.name}
                         fill
-                        className="object-cover absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+                        className="object-cover transition-opacity duration-700 group-hover:opacity-0"
                       />
+                    )}
+                    {product.images?.[1] && (
+                      product.images[1].startsWith('data:') ? (
+                        <img
+                          src={product.images[1]}
+                          alt={product.name}
+                          className="w-full h-full object-cover absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+                        />
+                      ) : (
+                        <Image
+                          src={product.images[1]}
+                          alt={product.name}
+                          fill
+                          className="object-cover absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+                        />
+                      )
                     )}
                     
                     {/* Quick Actions */}
@@ -201,7 +216,7 @@ export default function CollectionDetailPage() {
           <div className="bg-[#FAFAFA] p-12 md:p-16 rounded-sm">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-serif italic mb-6">
-                The Story Behind {category.name}
+                The Story Behind {collection.name}
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-8">
                 Each piece in this collection represents our commitment to timeless design and exceptional craftsmanship. 
