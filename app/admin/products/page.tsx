@@ -67,6 +67,21 @@ export default function ProductsAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    const formData = {
+      ...productForm,
+      price: Number(productForm.price),
+      stock: Number(productForm.stock),
+      minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
+      maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
+      discount: productForm.discount ? Number(productForm.discount) : undefined,
+      images: productForm.images.filter(img => img !== ""),
+      offerTag: productForm.offerTag || ""
+    }
+    
+    console.log('Submitting product data:', formData)
+    console.log('Offer tag value:', productForm.offerTag)
+    
     try {
       const url = editingProduct ? `/api/products/${editingProduct._id}` : '/api/products'
       const method = editingProduct ? 'PUT' : 'POST'
@@ -87,6 +102,7 @@ export default function ProductsAdmin() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
         body: JSON.stringify(productData)
       })
 
@@ -98,6 +114,19 @@ export default function ProductsAdmin() {
       } else {
         const error = await res.json()
         console.error('Error saving product:', error)
+=======
+        body: JSON.stringify(formData)
+      })
+
+      if (res.ok) {
+        const result = await res.json()
+        console.log('Server response:', result)
+        fetchProducts()
+        resetForm()
+      } else {
+        const errorText = await res.text()
+        console.error('Server error:', errorText)
+>>>>>>> 6269e0ee85210d41ae636f123ebedaae6982964e
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -203,6 +232,7 @@ export default function ProductsAdmin() {
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Discount</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Stock</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Category</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Offer Tag</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Featured</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
               </tr>
@@ -240,6 +270,15 @@ export default function ProductsAdmin() {
                   </td>
                   <td className="py-4 px-6 text-gray-700">{product.stock}</td>
                   <td className="py-4 px-6 text-gray-700">{product.category}</td>
+                  <td className="py-4 px-6">
+                    {product.offerTag ? (
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                        {product.offerTag}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">No Tag</span>
+                    )}
+                  </td>
                   <td className="py-4 px-6">
                     {product.featured && (
                       <span className="text-xs px-2 py-1 rounded-full bg-accent text-white">

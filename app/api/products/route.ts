@@ -24,9 +24,17 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const productData = await request.json();
+    
+    console.log('=== PRODUCT CREATION DEBUG ===');
+    console.log('Received product data:', productData);
+    console.log('Offer tag value:', productData.offerTag);
+    
     const product = await Product.create(productData);
+    console.log('Created product:', product.toObject());
+    
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('Product creation error:', error);
+    return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
 }

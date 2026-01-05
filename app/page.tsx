@@ -2,6 +2,7 @@
 
 import { HomeHero } from "@/components/home-hero"
 import { CategoryScroll } from "@/components/category-scroll"
+import { NewArrivals } from "@/components/new-arrivals"
 import { FeaturedProducts } from "@/components/featured-products"
 
 export default function Home() {
@@ -10,6 +11,8 @@ export default function Home() {
       <HomeHero />
 
       <CategoryScroll />
+
+      <NewArrivals />
 
       {/* Parallax / Inset Banner Section */}
       <section className="relative h-[80vh] w-full overflow-hidden my-12">
