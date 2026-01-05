@@ -16,6 +16,8 @@ interface Product {
   stock: number
   featured: boolean
   offerTag?: string
+  discount?: number
+  discountType?: string
 }
 
 export function NewArrivals() {
@@ -115,12 +117,14 @@ export function NewArrivals() {
                     className="object-cover transition-all duration-500 group-hover:scale-105"
                   />
                   
-                  {/* New Arrival Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
-                      New
-                    </span>
-                  </div>
+                  {/* Discount badge */}
+                  {product.discount && product.discount > 0 && (
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-accent text-white text-xs px-3 py-1 rounded-full font-medium">
+                        {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Stock Status */}
                   {product.stock === 0 && (
@@ -159,7 +163,24 @@ export function NewArrivals() {
                   {product.name}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">${product.price}</p>
+                  {/* Price with discount */}
+                  {product.discount && product.discount > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-red-600">
+                        ${
+                          product.discountType === 'percentage' 
+                            ? (product.price - (product.price * product.discount / 100)).toFixed(0)
+                            : (product.price - product.discount).toFixed(0)
+                        }
+                      </p>
+                      <p className="text-xs text-gray-500 line-through">
+                        ${product.price}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm font-medium">${product.price}</p>
+                  )}
+                  
                   <div className="flex gap-1">
                     <div className="w-2 h-2 rounded-full bg-black"></div>
                     <div className="w-2 h-2 rounded-full bg-gray-300"></div>

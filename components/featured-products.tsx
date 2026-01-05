@@ -16,6 +16,8 @@ interface Product {
   stock: number
   featured: boolean
   offerTag?: string
+  discount?: number
+  discountType?: string
 }
 
 export function FeaturedProducts() {
@@ -75,7 +77,7 @@ export function FeaturedProducts() {
     <section className="py-24 bg-[#F2F2F2]">
       <div className="px-6 md:px-12 text-center mb-20">
         <span className="text-[10px] uppercase tracking-[0.4em] text-accent font-semibold mb-4 block">Essentials</span>
-        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Seasonal Favorites</h2>
+        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Featured Collection</h2>
         <p className="text-gray-700 max-w-xl mx-auto text-sm leading-relaxed">
           Discover our most coveted pieces, crafted with meticulous attention to detail and premium fabrics for the
           modern wardrobe.
@@ -109,9 +111,10 @@ export function FeaturedProducts() {
                   />
                 )}
 
-                {product.offerTag && (
-                  <span className="absolute top-6 left-6 px-3 py-1 bg-white/80 backdrop-blur-sm text-[9px] uppercase tracking-widest font-bold rounded-full">
-                    {product.offerTag}
+                {/* Discount badge */}
+                {product.discount && product.discount > 0 && (
+                  <span className="absolute top-6 left-6 px-3 py-1 bg-accent text-white text-[9px] uppercase tracking-widest font-bold rounded-full">
+                    {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
                   </span>
                 )}
 
@@ -140,8 +143,24 @@ export function FeaturedProducts() {
             <div className="flex justify-between items-start px-2">
               <div>
                 <h3 className="text-lg font-serif mb-1">{product.name}</h3>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">${product.price}</p>
-                <p className="text-xs text-gray-500 mt-1">{product.category}</p>
+                
+                {/* Price with discount */}
+                {product.discount && product.discount > 0 ? (
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-bold text-red-600">
+                      ${
+                        product.discountType === 'percentage' 
+                          ? (product.price - (product.price * product.discount / 100)).toFixed(0)
+                          : (product.price - product.discount).toFixed(0)
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500 line-through">
+                      ${product.price}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">${product.price}</p>
+                )}
               </div>
               <div className="flex gap-1 mt-1">
                 <div className="w-2 h-2 rounded-full bg-primary" />
