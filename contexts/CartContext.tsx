@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useAuth } from './AuthContext'
 
 interface CartItem {
   _id: string
@@ -26,17 +27,30 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
+  const { user } = useAuth()
 
+  // Load user-specific cart when user changes
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
+    if (user) {
+      const userCartKey = `cart_${user.email}`
+      const savedCart = localStorage.getItem(userCartKey)
+      if (savedCart) {
+        setCart(JSON.parse(savedCart))
+      } else {
+        setCart([]) // New user gets empty cart
+      }
+    } else {
+      setCart([]) // No user, empty cart
     }
-  }, [])
+  }, [user])
 
+  // Save cart to user-specific localStorage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
+    if (user) {
+      const userCartKey = `cart_${user.email}`
+      localStorage.setItem(userCartKey, JSON.stringify(cart))
+    }
+  }, [cart, user])
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setCart(prev => {
