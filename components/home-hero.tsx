@@ -5,8 +5,19 @@ import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 
+interface Banner {
+  _id: string
+  title: string
+  subtitle?: string
+  description?: string
+  image: string
+  buttonText: string
+  buttonLink: string
+  status: string
+}
+
 export function HomeHero() {
-  const [banners, setBanners] = useState([])
+  const [banners, setBanners] = useState<Banner[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
 
@@ -15,7 +26,7 @@ export function HomeHero() {
       try {
         const res = await fetch('/api/banners')
         const data = await res.json()
-        setBanners(data.filter(banner => banner.status === 'active'))
+        setBanners(data.filter((banner: Banner) => banner.status === 'active'))
       } catch (error) {
         console.error('Error fetching banners:', error)
       } finally {

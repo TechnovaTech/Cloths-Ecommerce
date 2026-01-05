@@ -22,7 +22,7 @@ export default function ProductsAdmin() {
     offerTag: "",
     sizes: [],
     featured: false,
-    images: ["", "", "", ""],
+    images: ["", "", "", "", ""],
     minStock: "",
     maxStock: "",
     discount: "",
@@ -97,13 +97,16 @@ export default function ProductsAdmin() {
   const handleEdit = (product) => {
     setEditingProduct(product)
     const productImages = product.images || []
-    const paddedImages = [...productImages, "", "", "", ""].slice(0, 4)
+    const paddedImages = [...productImages, "", "", "", "", ""].slice(0, 5)
     setProductForm({
       name: product.name,
       description: product.description,
       price: product.price.toString(),
       category: product.category,
       stock: product.stock.toString(),
+      sku: product.sku || "",
+      offerTag: product.offerTag || "",
+      sizes: product.sizes || [],
       featured: product.featured,
       images: paddedImages,
       minStock: product.minStock?.toString() || "",
@@ -132,8 +135,11 @@ export default function ProductsAdmin() {
       price: "",
       category: "",
       stock: "",
+      sku: "",
+      offerTag: "",
+      sizes: [],
       featured: false,
-      images: ["", "", "", ""],
+      images: ["", "", "", "", ""],
       minStock: "",
       maxStock: "",
       discount: "",
@@ -359,12 +365,12 @@ export default function ProductsAdmin() {
                     <label key={size} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={productForm.sizes.includes(size)}
+                        checked={productForm.sizes?.includes(size) || false}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setProductForm({...productForm, sizes: [...productForm.sizes, size]})
+                            setProductForm({...productForm, sizes: [...(productForm.sizes || []), size]})
                           } else {
-                            setProductForm({...productForm, sizes: productForm.sizes.filter(s => s !== size)})
+                            setProductForm({...productForm, sizes: (productForm.sizes || []).filter(s => s !== size)})
                           }
                         }}
                         className="w-4 h-4"
@@ -390,10 +396,10 @@ export default function ProductsAdmin() {
 
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Product Images (4 Images)
+                  Product Images (5 Images)
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  {[0, 1, 2, 3].map((index) => (
+                <div className="grid grid-cols-3 gap-4">
+                  {[0, 1, 2, 3, 4].map((index) => (
                     <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center hover:border-accent smooth-transition">
                       <label className="text-xs text-gray-600 mb-2 block">
                         Image {index + 1}
@@ -404,15 +410,22 @@ export default function ProductsAdmin() {
                         onChange={(e) => {
                           const file = e.target.files?.[0]
                           if (file) {
-                            const newImages = [...productForm.images]
-                            newImages[index] = file.name
-                            setProductForm({...productForm, images: newImages})
+                            const reader = new FileReader()
+                            reader.onload = (event) => {
+                              const base64 = event.target.result
+                              const newImages = [...productForm.images]
+                              newImages[index] = base64
+                              setProductForm({...productForm, images: newImages})
+                            }
+                            reader.readAsDataURL(file)
                           }
                         }}
                         className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
                       />
                       {productForm.images[index] && (
-                        <p className="text-xs text-gray-500 mt-2 truncate">{productForm.images[index]}</p>
+                        <div className="mt-2">
+                          <img src={productForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
+                        </div>
                       )}
                     </div>
                   ))}
