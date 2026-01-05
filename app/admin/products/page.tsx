@@ -26,17 +26,19 @@ export default function ProductsAdmin() {
     discountType: "percentage"
   })
   
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
 
   React.useEffect(() => {
-    if (!user || user.role !== 'admin') {
+    if (!authLoading && (!user || user.role !== 'admin')) {
       router.push('/login')
       return
     }
-    fetchProducts()
-    fetchCategories()
-  }, [user, router])
+    if (user && user.role === 'admin') {
+      fetchProducts()
+      fetchCategories()
+    }
+  }, [user, authLoading, router])
 
   const fetchCategories = async () => {
     try {
@@ -136,6 +138,16 @@ export default function ProductsAdmin() {
     })
     setEditingProduct(null)
     setShowModal(false)
+  }
+
+  if (authLoading) {
+    return (
+      <AdminLayout title="Products" subtitle="Loading...">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Checking authentication...</p>
+        </div>
+      </AdminLayout>
+    )
   }
 
   if (loading) {
