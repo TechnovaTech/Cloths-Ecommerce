@@ -5,57 +5,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { Minus, Plus, X, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const cartItems = [
-  {
-    id: 1,
-    name: "Minimalist Wool Overcoat",
-    price: 590,
-    size: "M",
-    color: "Charcoal",
-    quantity: 1,
-    image: "/minimal-wool-coat-front.jpg",
-  },
-  {
-    id: 2,
-    name: "Silk Blend Evening Shirt",
-    price: 240,
-    size: "L",
-    color: "White",
-    quantity: 2,
-    image: "/silk-shirt-front.jpg",
-  },
-  {
-    id: 3,
-    name: "Cashmere Turtleneck",
-    price: 450,
-    size: "S",
-    color: "Black",
-    quantity: 1,
-    image: "/cashmere-knit-front.jpg",
-  },
-]
+import { useCart } from "@/contexts/CartContext"
 
 export default function CartPage() {
-  const [items, setItems] = React.useState(cartItems)
+  const { cart, updateQuantity, removeFromCart, cartTotal } = useCart()
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setItems(items.filter(item => item.id !== id))
-    } else {
-      setItems(items.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      ))
-    }
-  }
-
-  const removeItem = (id: number) => {
-    setItems(items.filter(item => item.id !== id))
-  }
-
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const shipping = subtotal > 300 ? 0 : 25
-  const total = subtotal + shipping
+  const shipping = cartTotal > 300 ? 0 : 25
+  const total = cartTotal + shipping
 
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen">
@@ -71,11 +27,11 @@ export default function CartPage() {
           </Link>
           <h1 className="text-5xl md:text-6xl font-serif italic mb-4">Shopping Cart</h1>
           <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
-            {items.length} {items.length === 1 ? 'Item' : 'Items'} in your cart
+            {cart.length} {cart.length === 1 ? 'Item' : 'Items'} in your cart
           </p>
         </div>
 
-        {items.length === 0 ? (
+        {cart.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-border p-12 text-center">
             <h2 className="text-2xl font-serif italic mb-4">Your cart is empty</h2>
             <p className="text-muted-foreground mb-8">Discover our curated collection of premium essentials</p>
@@ -92,8 +48,8 @@ export default function CartPage() {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm border border-border p-8">
                 <div className="space-y-8">
-                  {items.map((item) => (
-                <div key={item.id} className="flex gap-6 pb-8 border-b border-border">
+                  {cart.map((item) => (
+                <div key={item._id} className="flex gap-6 pb-8 border-b border-border">
                   <div className="relative w-32 h-40 bg-[#F2F2F2] rounded-sm overflow-hidden flex-shrink-0">
                     <Image
                       src={item.image}
@@ -108,12 +64,12 @@ export default function CartPage() {
                       <div>
                         <h3 className="text-xl font-serif italic mb-2">{item.name}</h3>
                         <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">Size: {item.size}</p>
-                          <p className="text-sm text-muted-foreground">Color: {item.color}</p>
+                          {item.size && <p className="text-sm text-muted-foreground">Size: {item.size}</p>}
+                          {item.color && <p className="text-sm text-muted-foreground">Color: {item.color}</p>}
                         </div>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeFromCart(item._id)}
                         className="p-2 hover:text-red-500 smooth-transition"
                       >
                         <X size={18} />
@@ -123,20 +79,20 @@ export default function CartPage() {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-4">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item._id, item.quantity - 1)}
                           className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary smooth-transition"
                         >
                           <Minus size={14} />
                         </button>
                         <span className="w-8 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item._id, item.quantity + 1)}
                           className="w-8 h-8 border border-border flex items-center justify-center hover:border-primary smooth-transition"
                         >
                           <Plus size={14} />
                         </button>
                       </div>
-                      <p className="text-lg font-medium">${item.price * item.quantity}</p>
+                      <p className="text-lg font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -153,7 +109,7 @@ export default function CartPage() {
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between">
                     <span className="text-sm">Subtotal</span>
-                    <span className="text-sm">${subtotal}</span>
+                    <span className="text-sm">${cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Shipping</span>
@@ -165,7 +121,7 @@ export default function CartPage() {
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between font-medium">
                       <span>Total</span>
-                      <span>${total}</span>
+                      <span>${total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -62,14 +62,18 @@ export default function WishlistPage() {
   }
 
   const moveToCart = (product: Product) => {
-    addToCart({
-      _id: product._id,
-      name: product.name,
-      price: calculateDiscountedPrice(product.price, product.discount, product.discountType),
-      image: product.images[0] || '/placeholder.jpg'
-    })
-    // Optionally remove from wishlist after adding to cart
-    // removeFromWishlist(product._id)
+    try {
+      addToCart({
+        _id: product._id,
+        name: product.name,
+        price: calculateDiscountedPrice(product.price, product.discount, product.discountType),
+        image: product.images[0] || '/placeholder.jpg'
+      })
+      console.log('Product added to cart:', product.name)
+      alert('Product added to cart successfully!')
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+    }
   }
 
   const clearWishlist = () => {
@@ -239,7 +243,7 @@ export default function WishlistPage() {
                       className={cn(
                         "w-full py-3 text-xs uppercase tracking-[0.2em] font-bold smooth-transition flex items-center justify-center gap-2",
                         isInStock
-                          ? "bg-primary text-white hover:bg-accent"
+                          ? "bg-black text-white hover:bg-[#C2A875]"
                           : "bg-gray-200 text-gray-400 cursor-not-allowed"
                       )}
                     >

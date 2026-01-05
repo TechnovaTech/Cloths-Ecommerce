@@ -5,8 +5,9 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { ShoppingBag, Heart, ChevronRight, Ruler } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useWishlist } from "@/contexts/WishlistContext"
+import { useCart } from "@/contexts/CartContext"
 
 interface Product {
   _id: string
@@ -24,11 +25,14 @@ interface Product {
 
 export default function ProductPage() {
   const params = useParams()
+  const router = useRouter()
   const [product, setProduct] = React.useState<Product | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [selectedSize, setSelectedSize] = React.useState("")
   const [activeImage, setActiveImage] = React.useState(0)
+  const [showSuccessMessage, setShowSuccessMessage] = React.useState(false)
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const { addToCart } = useCart()
 
   const handleWishlistToggle = () => {
     if (!product) return
@@ -43,6 +47,28 @@ export default function ProductPage() {
         image: product.images?.[0] || '/placeholder.svg'
       })
     }
+  }
+
+  const handleAddToCart = () => {
+    if (!product) return
+    
+    const finalPrice = product.discount && product.discount > 0 
+      ? product.discountType === 'percentage' 
+        ? product.price - (product.price * product.discount / 100)
+        : product.price - product.discount
+      : product.price
+    
+    addToCart({
+      _id: product._id,
+      name: product.name,
+      price: finalPrice,
+      image: product.images?.[0] || '/placeholder.svg',
+      size: selectedSize
+    })
+    
+    // Show success message
+    setShowSuccessMessage(true)
+    setTimeout(() => setShowSuccessMessage(false), 3000)
   }
 
   React.useEffect(() => {
@@ -220,6 +246,7 @@ export default function ProductPage() {
           {/* Actions */}
           <div className="space-y-4 mb-16">
             <button 
+              onClick={handleAddToCart}
               className="w-full bg-primary text-primary-foreground py-5 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-3 hover:bg-accent hover:text-white transition-all duration-500 transform active:scale-[0.98] disabled:opacity-50"
               disabled={product.stock === 0}
             >
@@ -229,6 +256,16 @@ export default function ProductPage() {
           </div>
         </div>
       </div>
+
+      {/* Success Message Popup */}
+      {showSuccessMessage && (
+        <div className="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded-sm shadow-lg border-2 border-[#c2a875] z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3">
+            <ShoppingBag size={20} />
+            <span className="font-medium">Product added to cart successfully!</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

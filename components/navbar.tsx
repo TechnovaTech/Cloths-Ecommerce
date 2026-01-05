@@ -6,6 +6,7 @@ import { Search, ShoppingBag, User, Menu, X, Heart, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import { useWishlist } from "@/contexts/WishlistContext"
+import { useCart } from "@/contexts/CartContext"
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false)
@@ -13,6 +14,7 @@ export function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const { user, logout } = useAuth()
   const { wishlistCount } = useWishlist()
+  const { cartCount } = useCart()
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -62,7 +64,7 @@ export function Navbar() {
           <Link href="/wishlist" className="hidden md:block p-2 hover:text-accent smooth-transition relative">
             <Heart size={20} strokeWidth={1.5} />
             {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-6 h-6 bg-[#C2A875] text-white text-sm font-bold rounded-full flex items-center justify-center">
                 {wishlistCount}
               </span>
             )}
@@ -113,7 +115,11 @@ export function Navbar() {
           </div>
           <Link href="/cart" className="p-2 hover:text-accent smooth-transition relative">
             <ShoppingBag size={20} strokeWidth={1.5} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-6 h-6 bg-[#C2A875] text-white text-sm font-bold rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
           </Link>
         </div>
       </div>
