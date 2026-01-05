@@ -12,6 +12,18 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, default: 'user' },
 }, { timestamps: true });
 
+// Banner Schema
+const BannerSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  subtitle: { type: String },
+  description: { type: String },
+  image: { type: String, required: true },
+  buttonText: { type: String, default: 'Shop Now' },
+  buttonLink: { type: String, default: '/shop' },
+  position: { type: Number, default: 0 },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+}, { timestamps: true });
+
 // Product Schema
 const ProductSchema = new mongoose.Schema({
   name: String,
@@ -27,6 +39,7 @@ const ProductSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const Banner = mongoose.models.Banner || mongoose.model('Banner', BannerSchema);
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
 const sampleProducts = [

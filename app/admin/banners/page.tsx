@@ -1,91 +1,147 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Eye, Edit, Trash2, X, Upload, Image } from "lucide-react"
-import { AdminLayout } from "@/components/admin/AdminLayout"
+import { Plus, Edit, Trash2, X } from "lucide-react"
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { AdminLayout } from '@/components/admin/AdminLayout'
 
-const banners = [
-  { 
-    id: 1, 
-    title: "Summer Collection 2024", 
-    subtitle: "Discover the latest trends", 
-    status: "Active", 
-    position: "Hero", 
-    created: "2024-01-15",
-    image: "/images/banner1.jpg",
-    link: "/collections/summer"
-  },
-  { 
-    id: 2, 
-    title: "Winter Sale", 
-    subtitle: "Up to 50% off selected items", 
-    status: "Active", 
-    position: "Secondary", 
-    created: "2024-01-20",
-    image: "/images/banner2.jpg",
-    link: "/sale/winter"
-  },
-  { 
-    id: 3, 
-    title: "New Arrivals", 
-    subtitle: "Fresh styles for the season", 
-    status: "Inactive", 
-    position: "Sidebar", 
-    created: "2024-02-01",
-    image: "/images/banner3.jpg",
-    link: "/collections/new"
-  },
-]
-
-export default function BannersPage() {
-  const [showAddModal, setShowAddModal] = React.useState(false)
-  const [showEditModal, setShowEditModal] = React.useState(false)
-  const [showViewModal, setShowViewModal] = React.useState(false)
-  const [selectedBanner, setSelectedBanner] = React.useState(null)
+export default function BannersAdmin() {
+  const [banners, setBanners] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+  const [showModal, setShowModal] = React.useState(false)
+  const [editingBanner, setEditingBanner] = React.useState(null)
   const [bannerForm, setBannerForm] = React.useState({
     title: "",
     subtitle: "",
-    position: "Hero",
-    link: "",
-    status: "Active"
+    description: "",
+    image: "",
+    imageType: "url",
+    buttonText: "Shop Now",
+    buttonLink: "/shop",
+    position: 0,
+    status: "active"
   })
+  
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
 
-  const handleAddBanner = () => {
-    console.log("Adding banner:", bannerForm)
-    setShowAddModal(false)
-    setBannerForm({ title: "", subtitle: "", position: "Hero", link: "", status: "Active" })
+  React.useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/login')
+      return
+    }
+    if (user && user.role === 'admin') {
+      fetchBanners()
+    }
+  }, [user, authLoading, router])
+
+  const fetchBanners = async () => {
+    try {
+      const res = await fetch('/api/banners')
+      const data = await res.json()
+      setBanners(data)
+    } catch (error) {
+      console.error('Error fetching banners:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleEditBanner = (banner) => {
-    setSelectedBanner(banner)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      const url = editingBanner ? `/api/banners/${editingBanner._id}` : '/api/banners'
+      const method = editingBanner ? 'PUT' : 'POST'
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...bannerForm,
+          position: Number(bannerForm.position)
+        })
+      })
+
+      if (res.ok) {
+        fetchBanners()
+        resetForm()
+      }
+    } catch (error) {
+      console.error('Error saving banner:', error)
+    }
+  }
+
+  const handleEdit = (banner) => {
+    setEditingBanner(banner)
     setBannerForm({
       title: banner.title,
-      subtitle: banner.subtitle,
+      subtitle: banner.subtitle || "",
+      description: banner.description || "",
+      image: banner.image,
+      imageType: "url",
+      buttonText: banner.buttonText,
+      buttonLink: banner.buttonLink,
       position: banner.position,
-      link: banner.link,
       status: banner.status
     })
-    setShowEditModal(true)
+    setShowModal(true)
   }
 
-  const handleViewBanner = (banner) => {
-    setSelectedBanner(banner)
-    setShowViewModal(true)
+  const handleDelete = async (id) => {
+    if (confirm('Are you sure you want to delete this banner?')) {
+      try {
+        await fetch(`/api/banners/${id}`, { method: 'DELETE' })
+        fetchBanners()
+      } catch (error) {
+        console.error('Error deleting banner:', error)
+      }
+    }
   }
 
-  const handleUpdateBanner = () => {
-    console.log("Updating banner:", bannerForm)
-    setShowEditModal(false)
-    setSelectedBanner(null)
+  const resetForm = () => {
+    setBannerForm({
+      title: "",
+      subtitle: "",
+      description: "",
+      image: "",
+      imageType: "url",
+      buttonText: "Shop Now",
+      buttonLink: "/shop",
+      position: 0,
+      status: "active"
+    })
+    setEditingBanner(null)
+    setShowModal(false)
+  }
+
+  if (authLoading) {
+    return (
+      <AdminLayout title="Banners" subtitle="Loading...">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Checking authentication...</p>
+        </div>
+      </AdminLayout>
+    )
+  }
+
+  if (loading) {
+    return (
+      <AdminLayout title="Banners" subtitle="Loading...">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Loading banners...</p>
+        </div>
+      </AdminLayout>
+    )
   }
 
   return (
-    <AdminLayout title="Banners Management" subtitle="Manage website banners and promotions">
+    <AdminLayout title="Banners" subtitle="Manage homepage banners">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
-          <h2 className="text-lg font-serif font-bold text-primary">All Banners</h2>
-          <button 
-            onClick={() => setShowAddModal(true)}
+          <h3 className="text-lg font-serif font-bold text-primary">Banners Management</h3>
+          <button
+            onClick={() => setShowModal(true)}
             className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
           >
             <Plus size={16} />
@@ -93,354 +149,171 @@ export default function BannersPage() {
           </button>
         </div>
         
-        <div className="p-6">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Banner</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Position</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Status</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Created</th>
-                  <th className="text-left py-3 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Banner</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {banners.map((banner) => (
+                <tr key={banner._id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-10 relative rounded overflow-hidden bg-gray-100">
+                        <img
+                          src={banner.image || "/placeholder.svg"}
+                          alt={banner.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium text-primary">{banner.title}</p>
+                        <p className="text-sm text-gray-600">{banner.subtitle}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEdit(banner)}
+                        className="p-1 text-gray-600 hover:text-primary"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(banner._id)}
+                        className="p-1 text-gray-600 hover:text-red-600"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {banners.map((banner) => (
-                  <tr key={banner.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-16 h-12 bg-gray-100 rounded-sm flex items-center justify-center">
-                          <Image size={20} className="text-gray-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-primary">{banner.title}</p>
-                          <p className="text-sm text-gray-600">{banner.subtitle}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 text-gray-700">{banner.position}</td>
-                    <td className="py-4">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        banner.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}>
-                        {banner.status}
-                      </span>
-                    </td>
-                    <td className="py-4 text-gray-700">{banner.created}</td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => handleViewBanner(banner)}
-                          className="p-1 text-gray-600 hover:text-primary"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleEditBanner(banner)}
-                          className="p-1 text-gray-600 hover:text-primary"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button className="p-1 text-gray-600 hover:text-red-600">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Add Banner Modal */}
-      {showAddModal && (
+      {/* Modal */}
+      {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-sm w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-serif font-bold text-primary">Add New Banner</h3>
-              <button 
-                onClick={() => setShowAddModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-sm"
-              >
+              <h3 className="text-lg font-serif font-bold text-primary">
+                {editingBanner ? 'Edit Banner' : 'Add New Banner'}
+              </h3>
+              <button onClick={resetForm} className="p-2 hover:bg-gray-100 rounded-sm">
                 <X size={20} />
               </button>
             </div>
             
-            <form className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Banner Title
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerForm.title}
-                    onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="Enter banner title"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Subtitle
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerForm.subtitle}
-                    onChange={(e) => setBannerForm({...bannerForm, subtitle: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="Enter subtitle"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Position
-                  </label>
-                  <select
-                    value={bannerForm.position}
-                    onChange={(e) => setBannerForm({...bannerForm, position: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  >
-                    <option value="Hero">Hero</option>
-                    <option value="Secondary">Secondary</option>
-                    <option value="Sidebar">Sidebar</option>
-                    <option value="Footer">Footer</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Link URL
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerForm.link}
-                    onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="/collections/summer"
-                  />
-                </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={bannerForm.title}
+                  onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                  placeholder="Banner title"
+                  required
+                />
               </div>
               
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Subtitle
+                </label>
+                <input
+                  type="text"
+                  value={bannerForm.subtitle}
+                  onChange={(e) => setBannerForm({...bannerForm, subtitle: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                  placeholder="Banner subtitle"
+                />
+              </div>
+
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
                   Banner Image
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-sm p-8 text-center hover:border-accent smooth-transition">
-                  <Upload className="mx-auto mb-4 text-gray-400" size={48} />
-                  <p className="text-gray-600 mb-2">Click to upload banner image</p>
-                  <p className="text-xs text-gray-500">PNG, JPG up to 5MB (Recommended: 1920x600px)</p>
-                  <input type="file" className="hidden" accept="image/*" />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="imageType"
+                        value="url"
+                        checked={bannerForm.imageType === 'url'}
+                        onChange={(e) => setBannerForm({...bannerForm, imageType: e.target.value})}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Image URL</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="imageType"
+                        value="file"
+                        checked={bannerForm.imageType === 'file'}
+                        onChange={(e) => setBannerForm({...bannerForm, imageType: e.target.value})}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Upload File</span>
+                    </label>
+                  </div>
+                  
+                  {bannerForm.imageType === 'url' ? (
+                    <input
+                      type="text"
+                      value={bannerForm.image}
+                      onChange={(e) => setBannerForm({...bannerForm, image: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
+                      placeholder="https://example.com/banner.jpg"
+                      required
+                    />
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-accent smooth-transition">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            setBannerForm({...bannerForm, image: file.name})
+                          }
+                        }}
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-2">Choose an image file</p>
+                    </div>
+                  )}
                 </div>
               </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={resetForm}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 smooth-transition"
                 >
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={handleAddBanner}
+                  type="submit"
                   className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent smooth-transition font-bold"
                 >
-                  Add Banner
+                  {editingBanner ? 'Update Banner' : 'Add Banner'}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Banner Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-sm w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-serif font-bold text-primary">Edit Banner</h3>
-              <button 
-                onClick={() => setShowEditModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-sm"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <form className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Banner Title
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerForm.title}
-                    onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Subtitle
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerForm.subtitle}
-                    onChange={(e) => setBannerForm({...bannerForm, subtitle: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Position
-                  </label>
-                  <select
-                    value={bannerForm.position}
-                    onChange={(e) => setBannerForm({...bannerForm, position: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  >
-                    <option value="Hero">Hero</option>
-                    <option value="Secondary">Secondary</option>
-                    <option value="Sidebar">Sidebar</option>
-                    <option value="Footer">Footer</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Link URL
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerForm.link}
-                    onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Status
-                </label>
-                <select
-                  value={bannerForm.status}
-                  onChange={(e) => setBannerForm({...bannerForm, status: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-              
-              <div className="flex items-center gap-4 pt-6 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 smooth-transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleUpdateBanner}
-                  className="px-6 py-3 bg-primary text-white rounded-sm hover:bg-accent smooth-transition font-bold"
-                >
-                  Update Banner
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Banner Modal */}
-      {showViewModal && selectedBanner && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-sm w-full max-w-2xl mx-4">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-serif font-bold text-primary">Banner Details</h3>
-              <button 
-                onClick={() => setShowViewModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-sm"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="w-full h-48 bg-gray-100 rounded-sm flex items-center justify-center mb-6">
-                <Image size={48} className="text-gray-400" />
-                <span className="ml-2 text-gray-500">Banner Preview</span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Title
-                  </label>
-                  <p className="text-lg font-medium text-primary">{selectedBanner.title}</p>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Subtitle
-                  </label>
-                  <p className="text-lg text-gray-700">{selectedBanner.subtitle}</p>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Position
-                  </label>
-                  <p className="text-lg text-gray-700">{selectedBanner.position}</p>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Link
-                  </label>
-                  <p className="text-lg text-blue-600">{selectedBanner.link}</p>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Status
-                  </label>
-                  <span className={`text-xs px-3 py-1 rounded-full ${
-                    selectedBanner.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}>
-                    {selectedBanner.status}
-                  </span>
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Created
-                  </label>
-                  <p className="text-lg text-gray-700">{selectedBanner.created}</p>
-                </div>
-              </div>
-              
-              <div className="pt-6 border-t border-border">
-                <button
-                  onClick={() => setShowViewModal(false)}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-sm hover:bg-gray-200 smooth-transition"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
