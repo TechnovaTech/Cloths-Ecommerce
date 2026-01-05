@@ -7,6 +7,8 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { LayoutWrapper } from "./layout-wrapper"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { WishlistProvider } from "@/contexts/WishlistContext"
+import { CartProvider } from "@/contexts/CartContext"
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
@@ -56,9 +58,13 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <AuthProvider>
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
+          <WishlistProvider>
+            <CartProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </CartProvider>
+          </WishlistProvider>
         </AuthProvider>
         <Analytics />
       </body>

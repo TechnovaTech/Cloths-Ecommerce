@@ -5,12 +5,14 @@ import Link from "next/link"
 import { Search, ShoppingBag, User, Menu, X, Heart, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
+import { useWishlist } from "@/contexts/WishlistContext"
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const { user, logout } = useAuth()
+  const { wishlistCount } = useWishlist()
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -57,8 +59,13 @@ export function Navbar() {
           <button className="p-2 hover:text-accent smooth-transition">
             <Search size={20} strokeWidth={1.5} />
           </button>
-          <Link href="/wishlist" className="hidden md:block p-2 hover:text-accent smooth-transition">
+          <Link href="/wishlist" className="hidden md:block p-2 hover:text-accent smooth-transition relative">
             <Heart size={20} strokeWidth={1.5} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {wishlistCount}
+              </span>
+            )}
           </Link>
           
           {/* User Menu */}

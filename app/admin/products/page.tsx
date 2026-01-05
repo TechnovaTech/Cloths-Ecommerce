@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Edit, Trash2, X } from "lucide-react"
+import { Plus, Edit, Trash2, X, Heart } from "lucide-react"
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/AdminLayout'
@@ -131,6 +131,21 @@ export default function ProductsAdmin() {
     }
   }
 
+  const toggleFavorite = async (productId, currentFavoriteStatus) => {
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ favorite: !currentFavoriteStatus })
+      })
+      if (res.ok) {
+        fetchProducts()
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
+  }
+
   const resetForm = () => {
     setProductForm({
       name: "",
@@ -224,6 +239,17 @@ export default function ProductsAdmin() {
                   <td className="py-4 px-6 text-gray-700">{product.category}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleFavorite(product._id, product.favorite)}
+                        className={`p-1 rounded-full transition-colors ${
+                          product.favorite 
+                            ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                            : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                        }`}
+                        title={product.favorite ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        <Heart size={16} fill={product.favorite ? 'currentColor' : 'none'} />
+                      </button>
                       <button
                         onClick={() => handleEdit(product)}
                         className="p-1 text-gray-600 hover:text-primary"

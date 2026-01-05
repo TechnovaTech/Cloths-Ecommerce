@@ -6,6 +6,7 @@ import Image from "next/image"
 import { ShoppingBag, Heart, ChevronRight, Ruler } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useParams } from "next/navigation"
+import { useWishlist } from "@/contexts/WishlistContext"
 
 interface Product {
   _id: string
@@ -27,6 +28,22 @@ export default function ProductPage() {
   const [loading, setLoading] = React.useState(true)
   const [selectedSize, setSelectedSize] = React.useState("")
   const [activeImage, setActiveImage] = React.useState(0)
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+
+  const handleWishlistToggle = () => {
+    if (!product) return
+    
+    if (isInWishlist(product._id)) {
+      removeFromWishlist(product._id)
+    } else {
+      addToWishlist({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0] || '/placeholder.svg'
+      })
+    }
+  }
 
   React.useEffect(() => {
     const fetchProduct = async () => {
@@ -122,8 +139,20 @@ export default function ProductPage() {
                 priority
               />
             </motion.div>
-            <button className="absolute top-6 right-6 p-3 bg-white/80 backdrop-blur-md rounded-full hover:bg-white smooth-transition">
-              <Heart size={20} strokeWidth={1} />
+            <button 
+              onClick={handleWishlistToggle}
+              className={cn(
+                "absolute top-6 right-6 p-3 backdrop-blur-md rounded-full smooth-transition",
+                isInWishlist(product._id) 
+                  ? "bg-red-500 text-white" 
+                  : "bg-white/80 hover:bg-white"
+              )}
+            >
+              <Heart 
+                size={20} 
+                strokeWidth={1} 
+                fill={isInWishlist(product._id) ? "currentColor" : "none"}
+              />
             </button>
           </div>
         </div>
@@ -196,9 +225,6 @@ export default function ProductPage() {
             >
               <ShoppingBag size={18} />
               {product.stock === 0 ? 'Out of Stock' : 'Add to Bag'}
-            </button>
-            <button className="w-full border border-primary py-5 text-xs uppercase tracking-[0.3em] font-bold hover:bg-primary hover:text-white smooth-transition">
-              Find in Store
             </button>
           </div>
         </div>
