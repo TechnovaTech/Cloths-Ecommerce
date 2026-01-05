@@ -17,6 +17,8 @@ interface Product {
   stock: number
   featured: boolean
   sizes?: string[]
+  discount?: number
+  discountType?: string
 }
 
 interface Category {
@@ -230,11 +232,11 @@ export default function ShopPage() {
                       </div>
                     )}
                     
-                    {/* Featured badge */}
-                    {product.featured && (
+                    {/* Discount badge on image */}
+                    {product.discount && product.discount > 0 && (
                       <div className="absolute top-4 left-4">
-                        <span className="bg-accent text-white text-xs px-2 py-1 rounded-full">
-                          Featured
+                        <span className="bg-accent text-white text-xs px-2 py-1 rounded-full font-bold">
+                          {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
                         </span>
                       </div>
                     )}
@@ -247,26 +249,31 @@ export default function ShopPage() {
                     <h3 className="text-xl font-serif italic mb-2 group-hover:text-accent smooth-transition">
                       {product.name}
                     </h3>
-                    <p className="text-sm font-medium tracking-widest">${product.price}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Stock: {product.stock}</p>
+                    
+                    {/* Price with discount */}
+                    <div className="flex items-center gap-2 justify-center">
+                      {product.discount && product.discount > 0 ? (
+                        <>
+                          <span className="text-lg font-bold tracking-widest text-red-600">
+                            ${
+                              product.discountType === 'percentage' 
+                                ? (product.price - (product.price * product.discount / 100)).toFixed(0)
+                                : (product.price - product.discount).toFixed(0)
+                            }
+                          </span>
+                          <span className="text-sm text-gray-500 line-through">
+                            ${product.price}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-lg font-bold tracking-widest">${product.price}</span>
+                      )}
+                    </div>
 
                     {viewMode === "list" && (
                       <p className="mt-4 text-sm text-muted-foreground max-w-md leading-relaxed">
                         {product.description}
                       </p>
-                    )}
-
-                    {product.sizes && product.sizes.length > 0 && (
-                      <div className={cn("mt-4 flex gap-1", viewMode === "grid" ? "justify-center" : "justify-start")}>
-                        {product.sizes.slice(0, 3).map((size) => (
-                          <span key={size} className="text-xs px-2 py-1 border border-gray-300 rounded">
-                            {size}
-                          </span>
-                        ))}
-                        {product.sizes.length > 3 && (
-                          <span className="text-xs text-muted-foreground">+{product.sizes.length - 3}</span>
-                        )}
-                      </div>
                     )}
                   </div>
                 </motion.div>

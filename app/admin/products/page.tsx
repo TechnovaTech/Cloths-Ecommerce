@@ -71,23 +71,33 @@ export default function ProductsAdmin() {
       const url = editingProduct ? `/api/products/${editingProduct._id}` : '/api/products'
       const method = editingProduct ? 'PUT' : 'POST'
       
+      const productData = {
+        ...productForm,
+        price: Number(productForm.price),
+        stock: Number(productForm.stock),
+        minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
+        maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
+        discount: productForm.discount ? Number(productForm.discount) : 0,
+        discountType: productForm.discountType || 'percentage',
+        images: productForm.images.filter(img => img !== "")
+      }
+      
+      console.log('Submitting product data:', productData)
+      
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...productForm,
-          price: Number(productForm.price),
-          stock: Number(productForm.stock),
-          minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
-          maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
-          discount: productForm.discount ? Number(productForm.discount) : undefined,
-          images: productForm.images.filter(img => img !== "")
-        })
+        body: JSON.stringify(productData)
       })
 
       if (res.ok) {
+        const savedProduct = await res.json()
+        console.log('Product saved successfully:', savedProduct)
         fetchProducts()
         resetForm()
+      } else {
+        const error = await res.json()
+        console.error('Error saving product:', error)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -190,6 +200,7 @@ export default function ProductsAdmin() {
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Product</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Image</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Price</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Discount</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Stock</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Category</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Featured</th>
@@ -218,6 +229,15 @@ export default function ProductsAdmin() {
                     </div>
                   </td>
                   <td className="py-4 px-6 text-gray-700">${product.price}</td>
+                  <td className="py-4 px-6 text-gray-700">
+                    {product.discount > 0 ? (
+                      <span className="text-green-600 font-medium">
+                        {product.discountType === 'percentage' ? `${product.discount}%` : `$${product.discount}`}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">No discount</span>
+                    )}
+                  </td>
                   <td className="py-4 px-6 text-gray-700">{product.stock}</td>
                   <td className="py-4 px-6 text-gray-700">{product.category}</td>
                   <td className="py-4 px-6">

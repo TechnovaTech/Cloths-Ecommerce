@@ -3,7 +3,7 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { ShoppingBag, Heart, ChevronRight, Ruler, ShieldCheck, Truck } from "lucide-react"
+import { ShoppingBag, Heart, ChevronRight, Ruler } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useParams } from "next/navigation"
 
@@ -17,6 +17,8 @@ interface Product {
   sizes?: string[]
   stock: number
   featured: boolean
+  discount?: number
+  discountType?: string
 }
 
 export default function ProductPage() {
@@ -133,7 +135,29 @@ export default function ProductPage() {
             <h1 className="text-4xl md:text-5xl font-serif italic mb-6 leading-tight">{product.name}</h1>
             <p className="text-2xl font-light tracking-widest mb-8">${product.price}.00</p>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">{product.description}</p>
-            <p className="text-sm text-gray-600 mb-4">Stock: {product.stock} available</p>
+            
+            {/* Price with discount */}
+            <div className="mb-8">
+              {product.discount && product.discount > 0 ? (
+                <div className="flex items-center gap-4 mb-2">
+                  <span className="text-3xl font-light tracking-widest text-red-600">
+                    ${
+                      product.discountType === 'percentage' 
+                        ? (product.price - (product.price * product.discount / 100)).toFixed(0)
+                        : (product.price - product.discount).toFixed(0)
+                    }.00
+                  </span>
+                  <span className="text-xl text-gray-500 line-through">
+                    ${product.price}.00
+                  </span>
+                  <span className="bg-accent text-white text-sm px-3 py-1 rounded-full font-bold">
+                    {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-3xl font-light tracking-widest mb-8">${product.price}.00</p>
+              )}
+            </div>
           </div>
 
           {/* Size Selection */}
@@ -176,24 +200,6 @@ export default function ProductPage() {
             <button className="w-full border border-primary py-5 text-xs uppercase tracking-[0.3em] font-bold hover:bg-primary hover:text-white smooth-transition">
               Find in Store
             </button>
-          </div>
-
-          {/* Value Props */}
-          <div className="grid grid-cols-1 gap-6 pt-12 border-t border-black/5">
-            <div className="flex items-start gap-4">
-              <Truck size={20} strokeWidth={1} className="text-accent" />
-              <div>
-                <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-1">Free Delivery</h4>
-                <p className="text-xs text-muted-foreground">Complimentary global shipping on orders over $300.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <ShieldCheck size={20} strokeWidth={1} className="text-accent" />
-              <div>
-                <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-1">Lifetime Warranty</h4>
-                <p className="text-xs text-muted-foreground">We guarantee the quality of our craftsmanship for life.</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -15,23 +15,48 @@ interface Category {
   createdAt: string;
 }
 
+interface Banner {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  image: string;
+  buttonText: string;
+  buttonLink: string;
+  status: string;
+  page: string;
+}
+
 export default function CollectionsPage() {
   const [categories, setCategories] = React.useState<Category[]>([]);
+  const [banners, setBanners] = React.useState<Banner[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    fetchCategories();
+    fetchData();
   }, []);
 
-  const fetchCategories = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
+      const [categoriesRes, bannersRes] = await Promise.all([
+        fetch('/api/categories'),
+        fetch('/api/banners')
+      ]);
+      
+      const categoriesData = await categoriesRes.json();
+      const bannersData = await bannersRes.json();
+      
       // Only show active categories
-      const activeCategories = data.filter((cat: Category) => cat.status === 'active');
+      const activeCategories = categoriesData.filter((cat: Category) => cat.status === 'active');
       setCategories(activeCategories);
+      
+      // Only show active banners for collections page
+      const collectionsBanners = bannersData.filter((banner: Banner) => 
+        banner.status === 'active' && banner.page === 'collections'
+      );
+      setBanners(collectionsBanners);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -57,6 +82,49 @@ export default function CollectionsPage() {
 
   return (
     <div className="pt-32 pb-24 bg-background">
+      {/* Banner Section */}
+      {banners.length > 0 && (
+        <section className="mb-16">
+          <div className="relative h-[70vh] overflow-hidden">
+            <div className="absolute inset-0">
+              <Image
+                src={banners[0].image}
+                alt={banners[0].title}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="relative h-full flex items-center px-6 md:px-12">
+              <div className="max-w-screen-2xl mx-auto w-full">
+                <div className="max-w-2xl text-white">
+                  <h2 className="text-4xl md:text-6xl font-serif italic mb-6 leading-tight">
+                    {banners[0].title}
+                  </h2>
+                  {banners[0].subtitle && (
+                    <p className="text-xl mb-4 opacity-90">
+                      {banners[0].subtitle}
+                    </p>
+                  )}
+                  {banners[0].description && (
+                    <p className="text-lg mb-8 opacity-80 leading-relaxed">
+                      {banners[0].description}
+                    </p>
+                  )}
+                  <Link
+                    href={banners[0].buttonLink}
+                    className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent hover:text-white smooth-transition"
+                  >
+                    {banners[0].buttonText}
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Header */}
       <div className="px-6 md:px-12 mb-16">
         <div className="max-w-screen-2xl mx-auto">
