@@ -59,10 +59,15 @@ export default function ProfilePage() {
     const fetchOrders = async () => {
       if (!user) return
       try {
-        const response = await fetch('/api/orders')
+        const token = localStorage.getItem('token')
+        const response = await fetch('/api/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         if (response.ok) {
           const data = await response.json()
-          setOrders(data.orders || [])
+          setOrders(data || [])
         }
       } catch (error) {
         console.error('Error fetching orders:', error)
@@ -251,7 +256,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex justify-between items-center">
                             <p className="text-sm text-muted-foreground">{order.items?.length || 1} items</p>
-                            <p className="font-medium">${order.total || 0}</p>
+                            <p className="font-medium">${order.totalAmount || 0}</p>
                           </div>
                         </div>
                       </div>
@@ -307,7 +312,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex justify-between items-center">
                           <p className="text-muted-foreground">{order.items?.length || 1} items</p>
-                          <p className="text-xl font-medium">${order.total || 0}</p>
+                          <p className="text-xl font-medium">${order.totalAmount || 0}</p>
                         </div>
                       </div>
                     ))}

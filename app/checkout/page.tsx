@@ -30,8 +30,9 @@ const cartItems = [
 
 export default function CheckoutPage() {
   const [step, setStep] = React.useState(1)
+  const [isPlacingOrder, setIsPlacingOrder] = React.useState(false)
   const { user } = useAuth()
-  const { cart, cartTotal } = useCart()
+  const { cart, cartTotal, clearCart } = useCart()
   const [formData, setFormData] = React.useState({
     firstName: '',
     lastName: '',
@@ -41,6 +42,70 @@ export default function CheckoutPage() {
     state: '',
     zipCode: ''
   })
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      alert('Please log in to place an order')
+      return
+    }
+
+    // Validate form data
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.address || !formData.city || !formData.state || !formData.zipCode) {
+      alert('Please fill in all shipping information')
+      setStep(1)
+      return
+    }
+
+    if (cart.length === 0) {
+      alert('Your cart is empty')
+      return
+    }
+
+    setIsPlacingOrder(true)
+    try {
+      const token = localStorage.getItem('token')
+      const orderData = {
+        items: cart.map(item => ({
+          product: item._id,
+          quantity: item.quantity,
+          size: item.size,
+          price: item.price
+        })),
+        totalAmount: total,
+        shippingAddress: {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: 'US'
+        },
+        paymentMethod: 'card',
+        paymentStatus: 'paid'
+      }
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(orderData)
+      })
+
+      if (response.ok) {
+        clearCart()
+        alert('Order placed successfully!')
+        window.location.href = '/profile'
+      } else {
+        alert('Failed to place order. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error placing order:', error)
+      alert('Failed to place order. Please try again.')
+    } finally {
+      setIsPlacingOrder(false)
+    }
+  }
 
   // Auto-fill user data when component mounts
   React.useEffect(() => {
@@ -180,7 +245,13 @@ export default function CheckoutPage() {
                 </div>
 
                 <button 
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (!formData.firstName || !formData.lastName || !formData.email || !formData.address || !formData.city || !formData.state || !formData.zipCode) {
+                      alert('Please fill in all required fields')
+                      return
+                    }
+                    setStep(2)
+                  }}
                   className="w-full bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition"
                 >
                   Continue to Payment
@@ -265,9 +336,13 @@ export default function CheckoutPage() {
                   >
                     Back
                   </button>
-                  <button className="flex-1 bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition flex items-center justify-center gap-2">
+                  <button 
+                    onClick={handlePlaceOrder}
+                    disabled={isPlacingOrder}
+                    className="flex-1 bg-primary text-white py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-accent smooth-transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
                     <Lock size={16} />
-                    Place Order
+                    {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
                   </button>
                 </div>
               </div>
