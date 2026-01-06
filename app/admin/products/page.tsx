@@ -43,6 +43,13 @@ export default function ProductsAdmin() {
     if (user && user.role === 'admin') {
       fetchProducts()
       fetchCategories()
+      
+      // Auto-refresh products every 10 seconds to show updated stock
+      const interval = setInterval(() => {
+        fetchProducts()
+      }, 10000)
+      
+      return () => clearInterval(interval)
     }
   }, [user, authLoading, router])
 
@@ -322,16 +329,16 @@ export default function ProductsAdmin() {
                     {product.sizeStock && product.sizeStock.length > 0 ? (
                       <div className="space-y-1">
                         {product.sizeStock.map((sizeItem, idx) => (
-                          <div key={idx} className="text-xs">
-                            <span className="font-medium">{sizeItem.size}:</span> {sizeItem.stock}
+                          <div key={idx} className="text-sm font-medium">
+                            <span className="font-bold">{sizeItem.size}:</span> {sizeItem.stock}
                           </div>
                         ))}
-                        <div className="text-xs text-gray-500 border-t pt-1">
+                        <div className="text-sm text-gray-600 border-t pt-1 font-semibold">
                           Total: {product.stock}
                         </div>
                       </div>
                     ) : (
-                      product.stock
+                      <span className="text-base font-semibold">{product.stock}</span>
                     )}
                   </td>
                   <td className="py-4 px-6 text-gray-700">{product.category}</td>
