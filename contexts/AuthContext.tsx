@@ -26,9 +26,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
+    // Only restore session if explicitly logged in, not for development
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    if (token && userData) {
+    
+    // Clear any existing session on app start to prevent auto-login
+    if (process.env.NODE_ENV === 'development') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+    } else if (token && userData) {
       setUser(JSON.parse(userData));
     }
     setLoading(false);
