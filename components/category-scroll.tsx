@@ -87,7 +87,7 @@ export function CategoryScroll() {
             viewport={{ once: true }}
             className="flex-shrink-0 group cursor-pointer"
           >
-            <Link href={`/collections/${cat._id}`}>
+            <Link href={`/shop?category=${cat.name}`}>
               <div className="relative w-[300px] h-[400px] md:w-[400px] md:h-[550px] overflow-hidden rounded-sm glass-effect">
                 <Image
                   src={cat.images?.[0] || "/placeholder.svg"}

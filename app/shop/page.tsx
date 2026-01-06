@@ -6,6 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { LayoutGrid, List, SlidersHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
 
 interface Product {
   _id: string
@@ -29,6 +30,7 @@ interface Category {
 }
 
 export default function ShopPage() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -62,6 +64,14 @@ export default function ShopPage() {
     fetchData()
   }, [])
 
+  // Set active category from URL parameter
+  React.useEffect(() => {
+    const categoryParam = searchParams.get('category')
+    if (categoryParam) {
+      setActiveCategory(categoryParam)
+    }
+  }, [searchParams])
+
   const filteredProducts = products.filter((p) => 
     activeCategory === "All" || p.category === activeCategory
   )
@@ -80,9 +90,11 @@ export default function ShopPage() {
     <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen">
       {/* Header */}
       <div className="max-w-screen-2xl mx-auto mb-16">
-        <h1 className="text-5xl md:text-6xl font-serif italic mb-4">Shop Collection</h1>
+        <h1 className="text-5xl md:text-6xl font-serif italic mb-4">
+          {activeCategory === "All" ? "Shop Collection" : `${activeCategory} Collection`}
+        </h1>
         <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
-          Refined essentials for the modern wardrobe
+          {activeCategory === "All" ? "Refined essentials for the modern wardrobe" : `Explore our ${activeCategory.toLowerCase()} collection`}
         </p>
       </div>
 
