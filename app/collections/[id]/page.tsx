@@ -22,6 +22,7 @@ interface Product {
   category: string
   description: string
   images: string[]
+  sizeStock?: { size: string; stock: number }[]
   stock: number
   featured: boolean
 }
@@ -185,18 +186,45 @@ export default function CollectionDetailPage() {
                     </div>
                     
                     {/* Stock indicator */}
-                    {product.stock === 0 && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">Out of Stock</span>
-                      </div>
-                    )}
+                    {(() => {
+                      const isOutOfStock = product.sizeStock && product.sizeStock.length > 0
+                        ? product.sizeStock.every(s => s.stock === 0)
+                        : product.stock === 0
+                      
+                      return isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">Out of Stock</span>
+                        </div>
+                      )
+                    })()}
                   </Link>
 
                   <div className="text-center">
                     <h3 className="text-xl font-serif italic mb-2 group-hover:text-accent smooth-transition">
                       {product.name}
                     </h3>
-                    <p className="text-sm font-medium tracking-widest">${product.price}</p>
+                    <p className="text-sm font-medium tracking-widest mb-2">${product.price}</p>
+                    
+                    {/* Available Sizes */}
+                    {product.sizeStock && product.sizeStock.length > 0 && (
+                      <div className="mb-2">
+                        <div className="flex justify-center gap-1 flex-wrap">
+                          {product.sizeStock.map((sizeItem) => (
+                            <span
+                              key={sizeItem.size}
+                              className={`text-xs px-2 py-1 border rounded ${
+                                sizeItem.stock > 0
+                                  ? 'border-gray-300 text-gray-700'
+                                  : 'border-gray-200 text-gray-400 line-through'
+                              }`}
+                            >
+                              {sizeItem.size}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     {product.featured && (
                       <span className="inline-block mt-2 text-xs px-2 py-1 bg-accent text-white rounded-full">
                         Featured

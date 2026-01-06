@@ -21,6 +21,7 @@ export default function ProductsAdmin() {
     sku: "",
     offerTag: "",
     sizes: [],
+    sizeStock: [],
     featured: false,
     images: ["", "", "", "", ""],
     minStock: "",
@@ -71,16 +72,32 @@ export default function ProductsAdmin() {
       const url = editingProduct ? `/api/products/${editingProduct._id}` : '/api/products'
       const method = editingProduct ? 'PUT' : 'POST'
       
+      // Filter out empty sizeStock entries
+      const validSizeStock = productForm.sizeStock.filter(item => 
+        item.size && item.size.trim() !== '' && item.stock >= 0
+      )
+      
       const productData = {
         ...productForm,
         price: Number(productForm.price),
-        stock: Number(productForm.stock),
+        stock: validSizeStock.length > 0 
+          ? validSizeStock.reduce((total, item) => total + Number(item.stock), 0)
+          : Number(productForm.stock),
+        sizeStock: validSizeStock.map(item => ({
+          size: item.size.trim(),
+          stock: Number(item.stock)
+        })),
         minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
         maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
         discount: productForm.discount ? Number(productForm.discount) : 0,
         discountType: productForm.discountType || 'percentage',
         images: productForm.images.filter(img => img !== "")
       }
+      
+      console.log('=== ADMIN FORM DEBUG ===');
+      console.log('Product form sizeStock:', productForm.sizeStock);
+      console.log('Valid sizeStock:', validSizeStock);
+      console.log('Final product data:', productData);
       
       const res = await fetch(url, {
         method,
@@ -91,6 +108,9 @@ export default function ProductsAdmin() {
       if (res.ok) {
         fetchProducts()
         resetForm()
+      } else {
+        const errorData = await res.json()
+        console.error('API Error:', errorData)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -110,6 +130,7 @@ export default function ProductsAdmin() {
       sku: product.sku || "",
       offerTag: product.offerTag || "",
       sizes: product.sizes || [],
+      sizeStock: product.sizeStock || [],
       featured: product.featured,
       images: paddedImages,
       minStock: product.minStock?.toString() || "",
@@ -156,6 +177,7 @@ export default function ProductsAdmin() {
       sku: "",
       offerTag: "",
       sizes: [],
+      sizeStock: [],
       featured: false,
       images: ["", "", "", "", ""],
       minStock: "",
@@ -165,6 +187,28 @@ export default function ProductsAdmin() {
     })
     setEditingProduct(null)
     setShowModal(false)
+  }
+
+  const addSizeStock = () => {
+    setProductForm({
+      ...productForm,
+      sizeStock: [...productForm.sizeStock, { size: '', stock: 0 }]
+    })
+  }
+
+  const removeSizeStock = (index) => {
+    const newSizeStock = productForm.sizeStock.filter((_, i) => i !== index)
+    setProductForm({ ...productForm, sizeStock: newSizeStock })
+  }
+
+  const updateSizeStock = (index, field, value) => {
+    const newSizeStock = [...productForm.sizeStock]
+    if (field === 'stock') {
+      newSizeStock[index] = { ...newSizeStock[index], [field]: Number(value) || 0 }
+    } else {
+      newSizeStock[index] = { ...newSizeStock[index], [field]: value }
+    }
+    setProductForm({ ...productForm, sizeStock: newSizeStock })
   }
 
   if (authLoading || loading) {
@@ -235,7 +279,22 @@ export default function ProductsAdmin() {
                       <span className="text-gray-400">No discount</span>
                     )}
                   </td>
-                  <td className="py-4 px-6 text-gray-700">{product.stock}</td>
+                  <td className="py-4 px-6 text-gray-700">
+                    {product.sizeStock && product.sizeStock.length > 0 ? (
+                      <div className="space-y-1">
+                        {product.sizeStock.map((sizeItem, idx) => (
+                          <div key={idx} className="text-xs">
+                            <span className="font-medium">{sizeItem.size}:</span> {sizeItem.stock}
+                          </div>
+                        ))}
+                        <div className="text-xs text-gray-500 border-t pt-1">
+                          Total: {product.stock}
+                        </div>
+                      </div>
+                    ) : (
+                      product.stock
+                    )}
+                  </td>
                   <td className="py-4 px-6 text-gray-700">{product.category}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
@@ -315,20 +374,6 @@ export default function ProductsAdmin() {
                 
                 <div>
                   <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                    Stock Quantity
-                  </label>
-                  <input
-                    type="number"
-                    value={productForm.stock}
-                    onChange={(e) => setProductForm({...productForm, stock: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
-                    placeholder="0"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
                     Category
                   </label>
                   <select
@@ -358,6 +403,76 @@ export default function ProductsAdmin() {
                   placeholder="Enter product description"
                   required
                 />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700">
+                    Stock Management
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addSizeStock}
+                    className="bg-primary text-white px-3 py-1 text-xs rounded hover:bg-accent transition-colors"
+                  >
+                    + Add Size Stock
+                  </button>
+                </div>
+                
+                {productForm.sizeStock.length > 0 ? (
+                  <div className="space-y-3 border border-gray-200 rounded-sm p-4 bg-gray-50">
+                    <div className="text-sm font-medium text-gray-700 mb-3">
+                      Size-wise Stock Configuration:
+                    </div>
+                    {productForm.sizeStock.map((sizeItem, index) => (
+                      <div key={index} className="flex items-center gap-3 bg-white p-3 rounded border">
+                        <div className="flex-1">
+                          <label className="text-xs text-gray-600 mb-1 block">Size</label>
+                          <input
+                            type="text"
+                            value={sizeItem.size}
+                            onChange={(e) => updateSizeStock(index, 'size', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
+                            placeholder="e.g., S, M, L, XL"
+                            required
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-xs text-gray-600 mb-1 block">Stock Quantity</label>
+                          <input
+                            type="number"
+                            value={sizeItem.stock}
+                            onChange={(e) => updateSizeStock(index, 'stock', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
+                            placeholder="0"
+                            min="0"
+                            required
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSizeStock(index)}
+                          className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded transition-colors"
+                          title="Remove this size"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="text-sm font-medium text-primary pt-2 border-t bg-white px-3 py-2 rounded">
+                      Total Stock: {productForm.sizeStock.reduce((total, item) => total + (Number(item.stock) || 0), 0)} units
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-sm">
+                    <p className="text-sm text-gray-500 mb-2">
+                      No size-wise stock configured
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Click "Add Size Stock" to manage inventory by sizes, or use the general stock field above
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>

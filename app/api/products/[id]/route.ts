@@ -23,7 +23,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const updateData = await request.json();
     
     console.log('=== PRODUCT UPDATE DEBUG ===');
-    console.log('Update data:', updateData);
+    console.log('Update data:', JSON.stringify(updateData, null, 2));
+    console.log('SizeStock data:', updateData.sizeStock);
     console.log('Offer tag value:', updateData.offerTag);
     
     const product = await Product.findByIdAndUpdate(id, updateData, { new: true });
@@ -31,7 +32,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
     
-    console.log('Updated product:', product.toObject());
+    console.log('Updated product:', JSON.stringify(product.toObject(), null, 2));
     return NextResponse.json(product);
   } catch (error) {
     console.error('Product update error:', error);

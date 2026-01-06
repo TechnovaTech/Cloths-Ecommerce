@@ -26,11 +26,12 @@ export async function POST(request: NextRequest) {
     const productData = await request.json();
     
     console.log('=== PRODUCT CREATION DEBUG ===');
-    console.log('Received product data:', productData);
-    console.log('Offer tag value:', productData.offerTag);
+    console.log('Received sizeStock:', productData.sizeStock);
+    console.log('Raw product data:', productData);
     
     const product = await Product.create(productData);
-    console.log('Created product:', product.toObject());
+    
+    console.log('Saved product sizeStock:', product.sizeStock);
     
     return NextResponse.json(product, { status: 201 });
   } catch (error) {

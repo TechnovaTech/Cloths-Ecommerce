@@ -20,6 +20,7 @@ const ProductSchema = new mongoose.Schema({
   sku: {
     type: String,
     unique: true,
+    sparse: true,
   },
   offerTag: {
     type: String,
@@ -39,6 +40,20 @@ const ProductSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0,
+  },
+  sizeStock: {
+    type: [{
+      size: {
+        type: String,
+        required: true,
+      },
+      stock: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+    }],
+    default: [],
   },
   minStock: {
     type: Number,
@@ -65,4 +80,6 @@ const ProductSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
+const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
+
+export default Product;

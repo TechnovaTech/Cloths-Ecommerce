@@ -18,6 +18,7 @@ interface Product {
   description: string
   images: string[]
   sizes?: string[]
+  sizeStock?: { size: string; stock: number }[]
   stock: number
   featured: boolean
   discount?: number
@@ -60,6 +61,14 @@ export default function ProductPage() {
       return
     }
     
+    // Check size-specific stock
+    if (product.sizeStock && product.sizeStock.length > 0) {
+      const selectedSizeStock = product.sizeStock.find(s => s.size === selectedSize)
+      if (!selectedSizeStock || selectedSizeStock.stock === 0) {
+        return // Don't add to cart if size is out of stock
+      }
+    }
+    
     const finalPrice = product.discount && product.discount > 0 
       ? product.discountType === 'percentage' 
         ? product.price - (product.price * product.discount / 100)
@@ -86,7 +95,10 @@ export default function ProductPage() {
         if (res.ok) {
           const data = await res.json()
           setProduct(data)
-          if (data.sizes && data.sizes.length > 0) {
+          // Set default size from sizeStock or sizes array
+          if (data.sizeStock && data.sizeStock.length > 0) {
+            setSelectedSize(data.sizeStock[0].size)
+          } else if (data.sizes && data.sizes.length > 0) {
             setSelectedSize(data.sizes[0])
           }
         } else {
@@ -226,7 +238,7 @@ export default function ProductPage() {
           </div>
 
           {/* Size Selection */}
-          {product.sizes && product.sizes.length > 0 && (
+          {((product.sizeStock && product.sizeStock.length > 0) || (product.sizes && product.sizes.length > 0)) && (
             <div className="mb-12">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xs uppercase tracking-[0.2em] font-bold">Size</h3>
@@ -235,21 +247,66 @@ export default function ProductPage() {
                 </button>
               </div>
               <div className="grid grid-cols-5 gap-3">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={cn(
-                      "py-3 border text-xs smooth-transition",
-                      selectedSize === size
-                        ? "bg-primary text-white border-primary"
-                        : "border-border hover:border-primary",
-                    )}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {product.sizeStock && product.sizeStock.length > 0 ? (
+                  // Show sizes from sizeStock with stock info
+                  product.sizeStock.map((sizeItem) => {
+                    const isOutOfStock = sizeItem.stock === 0
+                    const isSelected = selectedSize === sizeItem.size
+                    return (
+                      <button
+                        key={sizeItem.size}
+                        onClick={() => !isOutOfStock && setSelectedSize(sizeItem.size)}
+                        disabled={isOutOfStock}
+                        className={cn(
+                          "py-3 border text-xs smooth-transition relative",
+                          isSelected && !isOutOfStock
+                            ? "bg-primary text-white border-primary"
+                            : isOutOfStock
+                            ? "border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50"
+                            : "border-border hover:border-primary",
+                        )}
+                      >
+                        {sizeItem.size}
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-px bg-gray-400 transform rotate-45"></div>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })
+                ) : (
+                  // Fallback to regular sizes array
+                  product.sizes?.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={cn(
+                        "py-3 border text-xs smooth-transition",
+                        selectedSize === size
+                          ? "bg-primary text-white border-primary"
+                          : "border-border hover:border-primary",
+                      )}
+                    >
+                      {size}
+                    </button>
+                  ))
+                )}
               </div>
+              {/* Stock info for selected size */}
+              {product.sizeStock && product.sizeStock.length > 0 && selectedSize && (
+                <div className="mt-4 text-sm text-muted-foreground">
+                  {(() => {
+                    const selectedSizeStock = product.sizeStock.find(s => s.size === selectedSize)
+                    if (selectedSizeStock) {
+                      return selectedSizeStock.stock > 0 
+                        ? `${selectedSizeStock.stock} items available in size ${selectedSize}`
+                        : `Size ${selectedSize} is out of stock`
+                    }
+                    return null
+                  })()}
+                </div>
+              )}
             </div>
           )}
 
@@ -258,10 +315,24 @@ export default function ProductPage() {
             <button 
               onClick={handleAddToCart}
               className="w-full bg-primary text-primary-foreground py-5 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-3 hover:bg-accent hover:text-white transition-all duration-500 transform active:scale-[0.98] disabled:opacity-50"
-              disabled={product.stock === 0}
+              disabled={(() => {
+                if (product.sizeStock && product.sizeStock.length > 0) {
+                  const selectedSizeStock = product.sizeStock.find(s => s.size === selectedSize)
+                  return !selectedSizeStock || selectedSizeStock.stock === 0
+                }
+                return product.stock === 0
+              })()}
             >
               <ShoppingBag size={18} />
-              {product.stock === 0 ? 'Out of Stock' : 'Add to Bag'}
+              {(() => {
+                if (product.sizeStock && product.sizeStock.length > 0) {
+                  const selectedSizeStock = product.sizeStock.find(s => s.size === selectedSize)
+                  if (!selectedSizeStock || selectedSizeStock.stock === 0) {
+                    return 'Out of Stock'
+                  }
+                }
+                return product.stock === 0 ? 'Out of Stock' : 'Add to Bag'
+              })()}
             </button>
           </div>
         </div>
