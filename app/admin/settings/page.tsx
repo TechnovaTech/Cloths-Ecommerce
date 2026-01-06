@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Save } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
+import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
 export default function SettingsPage() {
   const [settings, setSettings] = React.useState({
@@ -21,6 +22,7 @@ export default function SettingsPage() {
   }
 
   return (
+    <AdminAuthWrapper>
     <AdminLayout title="Settings" subtitle="Configure your store settings">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* General Settings */}
@@ -147,5 +149,6 @@ export default function SettingsPage() {
         </button>
       </div>
     </AdminLayout>
+    </AdminAuthWrapper>
   )
 }

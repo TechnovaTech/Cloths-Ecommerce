@@ -3,8 +3,7 @@
 import * as React from "react"
 import { Eye, Edit, User, Mail, Calendar, ShoppingBag } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
-import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
+import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
 interface Customer {
   _id: string
@@ -19,18 +18,10 @@ interface Customer {
 export default function CustomersPage() {
   const [customers, setCustomers] = React.useState<Customer[]>([])
   const [loading, setLoading] = React.useState(true)
-  const { user, loading: authLoading } = useAuth()
-  const router = useRouter()
 
   React.useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'admin') {
-      fetchCustomers()
-    }
-  }, [user, authLoading, router])
+    fetchCustomers()
+  }, [])
 
   const fetchCustomers = async () => {
     try {
@@ -46,17 +37,20 @@ export default function CustomersPage() {
     }
   }
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <AdminLayout title="Customers" subtitle="Loading...">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading customers...</p>
-        </div>
-      </AdminLayout>
+      <AdminAuthWrapper>
+        <AdminLayout title="Customers" subtitle="Loading...">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-500">Loading customers...</p>
+          </div>
+        </AdminLayout>
+      </AdminAuthWrapper>
     )
   }
 
   return (
+    <AdminAuthWrapper>
     <AdminLayout title="Customers Management" subtitle="Manage your customer database">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
@@ -143,5 +137,6 @@ export default function CustomersPage() {
         </div>
       </div>
     </AdminLayout>
+    </AdminAuthWrapper>
   )
 }

@@ -20,18 +20,7 @@ export default function LoginPage() {
     
     const success = await login(email, password)
     if (success) {
-      // Check if user is admin and redirect accordingly
-      const userData = localStorage.getItem('user')
-      if (userData) {
-        const user = JSON.parse(userData)
-        if (user.role === 'admin') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
-      } else {
-        router.push('/')
-      }
+      router.push('/')
     }
     
     setLoading(false)

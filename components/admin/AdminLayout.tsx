@@ -27,8 +27,14 @@ interface AdminLayoutProps {
 export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
   const pathname = usePathname()
 
-  const handleLogout = () => {
-    window.location.href = '/login'
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = '/admin/login';
+    }
   }
 
   const isActive = (path: string) => pathname === path

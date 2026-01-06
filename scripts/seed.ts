@@ -12,6 +12,14 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, default: 'user' },
 }, { timestamps: true });
 
+// Admin Schema
+const AdminSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  role: { type: String, default: 'admin' },
+}, { timestamps: true });
+
 // Banner Schema
 const BannerSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -39,6 +47,7 @@ const ProductSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const Admin = mongoose.models.Admin || mongoose.model('Admin', AdminSchema);
 const Banner = mongoose.models.Banner || mongoose.model('Banner', BannerSchema);
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
@@ -89,11 +98,12 @@ async function seedDatabase() {
     // Clear existing data
     await Product.deleteMany({});
     await User.deleteMany({});
+    await Admin.deleteMany({});
     console.log('Cleared existing data');
     
     // Create admin user
     const hashedPassword = await bcrypt.hash('admin123', 12);
-    await User.create({
+    await Admin.create({
       name: "Admin",
       email: "admin@example.com",
       password: hashedPassword,

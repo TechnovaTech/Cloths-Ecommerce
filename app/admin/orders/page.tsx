@@ -3,8 +3,7 @@
 import * as React from "react"
 import { Filter, Eye, Edit, User, Package, Truck, CheckCircle, XCircle } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
-import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
+import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
 interface Order {
   _id: string
@@ -33,18 +32,10 @@ export default function OrdersPage() {
   const [orders, setOrders] = React.useState<Order[]>([])
   const [loading, setLoading] = React.useState(true)
   const [statusFilter, setStatusFilter] = React.useState('all')
-  const { user, loading: authLoading } = useAuth()
-  const router = useRouter()
 
   React.useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'admin') {
-      fetchOrders()
-    }
-  }, [user, authLoading, router])
+    fetchOrders()
+  }, [])
 
   const fetchOrders = async () => {
     try {
@@ -101,17 +92,20 @@ export default function OrdersPage() {
     statusFilter === 'all' || order.status === statusFilter
   )
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <AdminLayout title="Orders" subtitle="Loading...">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading orders...</p>
-        </div>
-      </AdminLayout>
+      <AdminAuthWrapper>
+        <AdminLayout title="Orders" subtitle="Loading...">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-500">Loading orders...</p>
+          </div>
+        </AdminLayout>
+      </AdminAuthWrapper>
     )
   }
 
   return (
+    <AdminAuthWrapper>
     <AdminLayout title="Orders Management" subtitle="Track and manage customer orders">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
@@ -208,5 +202,6 @@ export default function OrdersPage() {
         </div>
       </div>
     </AdminLayout>
+    </AdminAuthWrapper>
   )
 }

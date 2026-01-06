@@ -2,9 +2,8 @@
 
 import * as React from "react"
 import { Plus, Edit, Trash2, X } from "lucide-react"
-import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
 interface Product {
   _id: string
@@ -37,16 +36,9 @@ export default function CollectionsAdmin() {
     status: "active"
   })
   
-  const { user } = useAuth()
-  const router = useRouter()
-
   React.useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      router.push('/login')
-      return
-    }
     fetchData()
-  }, [user, router])
+  }, [])
 
   const fetchData = async () => {
     try {
@@ -173,15 +165,18 @@ export default function CollectionsAdmin() {
 
   if (loading) {
     return (
-      <AdminLayout title="Collections" subtitle="Loading...">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading collections...</p>
-        </div>
-      </AdminLayout>
+      <AdminAuthWrapper>
+        <AdminLayout title="Collections" subtitle="Loading...">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-500">Loading collections...</p>
+          </div>
+        </AdminLayout>
+      </AdminAuthWrapper>
     )
   }
 
   return (
+    <AdminAuthWrapper>
     <AdminLayout title="Collections" subtitle="Manage product collections">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
@@ -403,5 +398,6 @@ export default function CollectionsAdmin() {
         </div>
       )}
     </AdminLayout>
+    </AdminAuthWrapper>
   )
 }

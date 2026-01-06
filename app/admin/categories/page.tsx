@@ -2,9 +2,8 @@
 
 import * as React from "react"
 import { Plus, Edit, Trash2, X, Tag } from "lucide-react"
-import { useAuth } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
 export default function CategoriesAdmin() {
   const [categories, setCategories] = React.useState([])
@@ -18,18 +17,9 @@ export default function CategoriesAdmin() {
     images: []
   })
   
-  const { user, loading: authLoading } = useAuth()
-  const router = useRouter()
-
   React.useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/login')
-      return
-    }
-    if (user && user.role === 'admin') {
-      fetchCategories()
-    }
-  }, [user, authLoading, router])
+    fetchCategories()
+  }, [])
 
   const fetchCategories = async () => {
     try {
@@ -140,27 +130,20 @@ export default function CategoriesAdmin() {
     setShowModal(false)
   }
 
-  if (authLoading) {
-    return (
-      <AdminLayout title="Categories" subtitle="Loading...">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Checking authentication...</p>
-        </div>
-      </AdminLayout>
-    )
-  }
-
   if (loading) {
     return (
-      <AdminLayout title="Categories" subtitle="Loading...">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading categories...</p>
-        </div>
-      </AdminLayout>
+      <AdminAuthWrapper>
+        <AdminLayout title="Categories" subtitle="Loading...">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-gray-500">Loading categories...</p>
+          </div>
+        </AdminLayout>
+      </AdminAuthWrapper>
     )
   }
 
   return (
+    <AdminAuthWrapper>
     <AdminLayout title="Categories" subtitle="Manage product categories">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
@@ -349,5 +332,6 @@ export default function CategoriesAdmin() {
         </div>
       )}
     </AdminLayout>
+    </AdminAuthWrapper>
   )
 }

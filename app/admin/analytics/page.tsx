@@ -3,6 +3,7 @@
 import * as React from "react"
 import { TrendingUp, Users, ShoppingBag, DollarSign } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
+import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
 const stats = [
   { title: "Total Revenue", value: "$45,231", change: "+12.5%", icon: DollarSign },
@@ -13,6 +14,7 @@ const stats = [
 
 export default function AnalyticsPage() {
   return (
+    <AdminAuthWrapper>
     <AdminLayout title="Analytics Dashboard" subtitle="Track your business performance">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -101,5 +103,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </AdminLayout>
+    </AdminAuthWrapper>
   )
 }
