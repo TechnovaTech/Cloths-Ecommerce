@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Edit, Trash2, X, Heart } from "lucide-react"
+import { Plus, Edit, Trash2, X, Heart, Eye } from "lucide-react"
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/AdminLayout'
@@ -11,7 +11,9 @@ export default function ProductsAdmin() {
   const [categories, setCategories] = React.useState([])
   const [loading, setLoading] = React.useState(true)
   const [showModal, setShowModal] = React.useState(false)
+  const [showDetailModal, setShowDetailModal] = React.useState(false)
   const [editingProduct, setEditingProduct] = React.useState(null)
+  const [viewingProduct, setViewingProduct] = React.useState(null)
   const [productForm, setProductForm] = React.useState({
     name: "",
     description: "",
@@ -74,18 +76,18 @@ export default function ProductsAdmin() {
       
       // Filter out empty sizeStock entries
       const validSizeStock = (productForm.sizeStock || []).filter(item => 
-        item.size && item.size.trim() !== '' && Number(item.stock) >= 0
+        item.size && item.size.trim() !== ''
       )
       
       const productData = {
         ...productForm,
         price: Number(productForm.price),
         stock: validSizeStock.length > 0 
-          ? validSizeStock.reduce((total, item) => total + Number(item.stock), 0)
+          ? validSizeStock.reduce((total, item) => total + Number(item.stock || 0), 0)
           : Number(productForm.stock),
         sizeStock: validSizeStock.map(item => ({
           size: item.size.trim(),
-          stock: Number(item.stock)
+          stock: Number(item.stock || 0)
         })),
         minStock: productForm.minStock ? Number(productForm.minStock) : undefined,
         maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
@@ -197,6 +199,11 @@ export default function ProductsAdmin() {
     } catch (error) {
       console.error('Error toggling favorite:', error)
     }
+  }
+
+  const handleViewDetails = (product) => {
+    setViewingProduct(product)
+    setShowDetailModal(true)
   }
 
   const resetForm = () => {
@@ -331,15 +338,11 @@ export default function ProductsAdmin() {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => toggleFavorite(product._id, product.favorite)}
-                        className={`p-1 rounded-full transition-colors ${
-                          product.favorite 
-                            ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-                            : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                        }`}
-                        title={product.favorite ? 'Remove from favorites' : 'Add to favorites'}
+                        onClick={() => handleViewDetails(product)}
+                        className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                        title="View details"
                       >
-                        <Heart size={16} fill={product.favorite ? 'currentColor' : 'none'} />
+                        <Eye size={16} />
                       </button>
                       <button
                         onClick={() => handleEdit(product)}
@@ -451,7 +454,7 @@ export default function ProductsAdmin() {
                   </button>
                 </div>
                 
-                {productForm.sizeStock.length > 0 ? (
+                {productForm.sizeStock && productForm.sizeStock.length > 0 ? (
                   <div className="space-y-3 border border-gray-200 rounded-sm p-4 bg-gray-50">
                     <div className="text-sm font-medium text-gray-700 mb-3">
                       Size-wise Stock Configuration:
@@ -462,23 +465,21 @@ export default function ProductsAdmin() {
                           <label className="text-xs text-gray-600 mb-1 block">Size</label>
                           <input
                             type="text"
-                            value={sizeItem.size}
+                            value={sizeItem.size || ''}
                             onChange={(e) => updateSizeStock(index, 'size', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
                             placeholder="e.g., S, M, L, XL"
-                            required
                           />
                         </div>
                         <div className="flex-1">
                           <label className="text-xs text-gray-600 mb-1 block">Stock Quantity</label>
                           <input
                             type="number"
-                            value={sizeItem.stock}
+                            value={sizeItem.stock || 0}
                             onChange={(e) => updateSizeStock(index, 'stock', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm"
                             placeholder="0"
                             min="0"
-                            required
                           />
                         </div>
                         <button
@@ -501,7 +502,7 @@ export default function ProductsAdmin() {
                       No size-wise stock configured
                     </p>
                     <p className="text-xs text-gray-400">
-                      Click "Add Size Stock" to manage inventory by sizes, or use the general stock field above
+                      Click "Add Size Stock" to manage inventory by sizes
                     </p>
                   </div>
                 )}
@@ -605,6 +606,179 @@ export default function ProductsAdmin() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Product Detail Modal */}
+      {showDetailModal && viewingProduct && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-sm w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-serif font-bold text-primary">
+                Product Details - {viewingProduct.name}
+              </h3>
+              <button 
+                onClick={() => setShowDetailModal(false)} 
+                className="p-2 hover:bg-gray-100 rounded-sm"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column - Images, Discount, Stock */}
+                <div className="space-y-6">
+                  {/* Product Images */}
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-widest">Images</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {viewingProduct.images?.filter(img => img).map((img, idx) => (
+                        <div key={idx} className="aspect-square bg-gray-100 rounded overflow-hidden shadow-md border hover:shadow-lg transition-shadow">
+                          <img 
+                            src={img || '/placeholder.svg'} 
+                            alt={`${viewingProduct.name} ${idx + 1}`}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            onError={(e) => e.currentTarget.src = '/placeholder.svg'}
+                          />
+                        </div>
+                      ))}
+                      {(!viewingProduct.images || viewingProduct.images.filter(img => img).length === 0) && (
+                        <div className="col-span-2 aspect-square bg-gray-200 rounded flex items-center justify-center">
+                          <p className="text-gray-500 text-sm">No images available</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Discount Information */}
+                  {viewingProduct.discount > 0 && (
+                    <div className="bg-white rounded-lg p-5 border border-gray-200">
+                      <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Discount & Pricing</h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Original</span>
+                          <p className="text-lg font-bold text-gray-500 line-through">${viewingProduct.price}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Discount</span>
+                          <p className="text-lg font-bold text-black">
+                            {viewingProduct.discountType === 'percentage' ? `${viewingProduct.discount}%` : `$${viewingProduct.discount}`}
+                          </p>
+                        </div>
+                        <div className="bg-black text-white rounded-lg p-3 text-center">
+                          <span className="text-xs uppercase tracking-wide text-gray-300 font-medium block mb-1">Final Price</span>
+                          <p className="text-lg font-bold">
+                            ${
+                              viewingProduct.discountType === 'percentage' 
+                                ? (viewingProduct.price - (viewingProduct.price * viewingProduct.discount / 100)).toFixed(2)
+                                : (viewingProduct.price - viewingProduct.discount).toFixed(2)
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Stock Information */}
+                  <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Stock Information</h4>
+                    {viewingProduct.sizeStock && viewingProduct.sizeStock.length > 0 ? (
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <span className="text-sm font-medium text-black mb-2 block">Size-wise Stock</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            {viewingProduct.sizeStock.map((sizeItem, idx) => (
+                              <div key={idx} className="p-2 rounded border border-gray-200 text-center text-sm bg-white">
+                                <div className="font-bold text-black">{sizeItem.size}</div>
+                                <div className="text-xs text-gray-600">{sizeItem.stock} units</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="bg-black text-white rounded-lg p-3 text-center">
+                          <span className="text-xs uppercase tracking-wide text-gray-300 font-medium block mb-1">Total Stock</span>
+                          <p className="text-2xl font-bold">{viewingProduct.stock} Units</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
+                        <div className="text-3xl font-bold text-black mb-1">{viewingProduct.stock}</div>
+                        <div className="text-xs uppercase tracking-wide text-gray-600 font-medium">Total Units</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column - Basic Info, Description, Offer */}
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Basic Information</h4>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Product Name</span>
+                        <p className="text-xl font-bold text-black">{viewingProduct.name}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Category</span>
+                          <p className="text-base font-semibold text-black">{viewingProduct.category}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Price</span>
+                          <p className="text-xl font-bold text-black">${viewingProduct.price}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">SKU</span>
+                          <p className="text-base font-semibold text-black">{viewingProduct.sku || 'Not Set'}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Status</span>
+                          <div className="flex gap-1 mt-1">
+                            {viewingProduct.featured && (
+                              <span className="bg-black text-white px-2 py-1 rounded text-xs font-medium">
+                                ⭐ Featured
+                              </span>
+                            )}
+                            {viewingProduct.favorite && (
+                              <span className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium">
+                                ❤️ Favorite
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className="bg-white rounded-lg p-5 border border-gray-200">
+                    <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Product Description</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <p className="text-gray-700 leading-relaxed">
+                        {viewingProduct.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Offer Tag */}
+                  {viewingProduct.offerTag && (
+                    <div className="bg-white rounded-lg p-5 border border-gray-200">
+                      <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Special Offer</h4>
+                      <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
+                        <span className="bg-black text-white px-4 py-2 rounded text-base font-bold">
+                          🏷️ {viewingProduct.offerTag}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
