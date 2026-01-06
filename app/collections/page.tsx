@@ -246,32 +246,6 @@ export default function CollectionsPage() {
                       
                       {/* Overlay */}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 smooth-transition" />
-                      
-                      {/* Admin Controls */}
-                      {isAdmin && (
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleEdit(collection);
-                              }}
-                              className="p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
-                            >
-                              <Edit size={14} className="text-gray-700" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleDelete(collection._id);
-                              }}
-                              className="p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
-                            >
-                              <Trash2 size={14} className="text-red-600" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Collection Details */}
