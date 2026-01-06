@@ -110,7 +110,7 @@ export default function OrdersPage() {
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="text-lg font-serif font-bold text-primary">All Orders ({filteredOrders.length})</h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4"> 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
