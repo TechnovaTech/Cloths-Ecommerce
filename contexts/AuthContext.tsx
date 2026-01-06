@@ -26,16 +26,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    // Only restore session if explicitly logged in, not for development
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
-    // Clear any existing session on app start to prevent auto-login
-    if (process.env.NODE_ENV === 'development') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
-    } else if (token && userData) {
+    if (token && userData) {
       setUser(JSON.parse(userData));
     }
     setLoading(false);
@@ -90,9 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
         return true;
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || 'Registration failed');
+        return false;
       }
-      return false;
-    } catch {
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Network error. Please check your connection.');
       return false;
     }
   };

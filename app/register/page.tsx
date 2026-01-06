@@ -28,21 +28,18 @@ export default function RegisterPage() {
     }
     
     setLoading(true)
-    const name = `${formData.firstName} ${formData.lastName}`
-    const success = await register(name, formData.email, formData.password)
-    if (success) {
-      // Check if user is admin and redirect accordingly
-      const userData = localStorage.getItem('user')
-      if (userData) {
-        const user = JSON.parse(userData)
-        if (user.role === 'admin') {
-          router.push('/admin')
-        } else {
-          router.push('/')
-        }
-      } else {
+    try {
+      const name = `${formData.firstName} ${formData.lastName}`
+      const success = await register(name, formData.email, formData.password)
+      if (success) {
+        alert('Account created successfully!')
         router.push('/')
+      } else {
+        alert('Failed to create account. Please try again.')
       }
+    } catch (error) {
+      console.error('Registration error:', error)
+      alert('An error occurred. Please try again.')
     }
     setLoading(false)
   }

@@ -73,8 +73,8 @@ export default function ProductsAdmin() {
       const method = editingProduct ? 'PUT' : 'POST'
       
       // Filter out empty sizeStock entries
-      const validSizeStock = productForm.sizeStock.filter(item => 
-        item.size && item.size.trim() !== '' && item.stock >= 0
+      const validSizeStock = (productForm.sizeStock || []).filter(item => 
+        item.size && item.size.trim() !== '' && Number(item.stock) >= 0
       )
       
       const productData = {
@@ -94,10 +94,13 @@ export default function ProductsAdmin() {
         images: productForm.images.filter(img => img !== "")
       }
       
-      console.log('=== ADMIN FORM DEBUG ===');
+      console.log('=== ADMIN FORM SUBMIT DEBUG ===');
+      console.log('Method:', method);
+      console.log('URL:', url);
       console.log('Product form sizeStock:', productForm.sizeStock);
       console.log('Valid sizeStock:', validSizeStock);
-      console.log('Final product data:', productData);
+      console.log('Final product data sizeStock:', productData.sizeStock);
+      console.log('Complete product data:', productData);
       
       const res = await fetch(url, {
         method,
@@ -106,38 +109,67 @@ export default function ProductsAdmin() {
       })
 
       if (res.ok) {
+        const savedProduct = await res.json()
+        console.log('Saved product response:', savedProduct)
+        alert(editingProduct ? 'Product updated successfully!' : 'Product created successfully!')
         fetchProducts()
         resetForm()
       } else {
         const errorData = await res.json()
         console.error('API Error:', errorData)
+        alert('Error saving product: ' + (errorData.error || 'Unknown error'))
       }
     } catch (error) {
       console.error('Error saving product:', error)
+      alert('Error saving product: ' + error.message)
     }
   }
 
   const handleEdit = (product) => {
+    console.log('=== EDIT PRODUCT DEBUG ===');
+    console.log('Original product:', product);
+    console.log('Product sizeStock:', product.sizeStock);
+    
     setEditingProduct(product)
     const productImages = product.images || []
     const paddedImages = [...productImages, "", "", "", "", ""].slice(0, 5)
-    setProductForm({
-      name: product.name,
-      description: product.description,
-      price: product.price.toString(),
-      category: product.category,
-      stock: product.stock.toString(),
+    
+    // Ensure sizeStock is properly loaded with debugging
+    let sizeStock = []
+    if (product.sizeStock && Array.isArray(product.sizeStock) && product.sizeStock.length > 0) {
+      sizeStock = product.sizeStock.map(item => {
+        console.log('Processing sizeStock item:', item);
+        return {
+          size: String(item.size || ''),
+          stock: Number(item.stock) || 0
+        }
+      })
+    }
+    
+    console.log('Processed sizeStock for form:', sizeStock);
+    
+    const formData = {
+      name: product.name || '',
+      description: product.description || '',
+      price: String(product.price || ''),
+      category: product.category || '',
+      stock: String(product.stock || ''),
       sku: product.sku || "",
       offerTag: product.offerTag || "",
       sizes: product.sizes || [],
-      sizeStock: product.sizeStock || [],
-      featured: product.featured,
+      sizeStock: sizeStock,
+      featured: Boolean(product.featured),
       images: paddedImages,
-      minStock: product.minStock?.toString() || "",
-      maxStock: product.maxStock?.toString() || "",
-      discount: product.discount?.toString() || "",
+      minStock: product.minStock ? String(product.minStock) : "",
+      maxStock: product.maxStock ? String(product.maxStock) : "",
+      discount: product.discount ? String(product.discount) : "",
       discountType: product.discountType || "percentage"
-    })
+    }
+    
+    console.log('Final form data:', formData);
+    console.log('Form sizeStock:', formData.sizeStock);
+    
+    setProductForm(formData)
     setShowModal(true)
   }
 
@@ -192,7 +224,7 @@ export default function ProductsAdmin() {
   const addSizeStock = () => {
     setProductForm({
       ...productForm,
-      sizeStock: [...productForm.sizeStock, { size: '', stock: 0 }]
+      sizeStock: [...(productForm.sizeStock || []), { size: '', stock: 0 }]
     })
   }
 
@@ -202,7 +234,7 @@ export default function ProductsAdmin() {
   }
 
   const updateSizeStock = (index, field, value) => {
-    const newSizeStock = [...productForm.sizeStock]
+    const newSizeStock = [...(productForm.sizeStock || [])]
     if (field === 'stock') {
       newSizeStock[index] = { ...newSizeStock[index], [field]: Number(value) || 0 }
     } else {
