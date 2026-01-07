@@ -69,6 +69,7 @@ export default function CheckoutPage() {
           product: item._id,
           quantity: item.quantity,
           size: item.size,
+          color: item.color,
           price: item.price
         })),
         totalAmount: total,
@@ -92,12 +93,17 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData)
       })
 
+      console.log('Order response status:', response.status)
+      const responseData = await response.json()
+      console.log('Order response data:', responseData)
+
       if (response.ok) {
         clearCart()
         alert('Order placed successfully!')
         window.location.href = '/profile'
       } else {
-        alert('Failed to place order. Please try again.')
+        console.error('Order failed:', responseData)
+        alert(`Failed to place order: ${responseData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error placing order:', error)

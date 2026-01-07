@@ -175,7 +175,7 @@ export default function OrdersPage() {
                         <span className="text-xs text-gray-500">items</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 font-bold text-primary">${order.totalAmount}</td>
+                    <td className="py-4 px-6 font-bold text-primary">${order.totalAmount?.toFixed(2) || '0.00'}</td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(order.status)}
@@ -232,16 +232,16 @@ export default function OrdersPage() {
                                       <div>
                                         <span className="font-medium">Quantity:</span> {item.quantity}
                                       </div>
-                                      <div>
-                                        <span className="font-medium">Price:</span> ${item.price}
-                                      </div>
                                       {item.size && (
                                         <div>
                                           <span className="font-medium">Size:</span> {item.size}
                                         </div>
                                       )}
                                       <div>
-                                        <span className="font-medium">Total:</span> ${(item.price * item.quantity).toFixed(2)}
+                                        <span className="font-medium">Unit Price:</span> ${item.price?.toFixed(2) || '0.00'}
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Line Total:</span> <span className="font-bold text-primary">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -318,8 +318,20 @@ export default function OrdersPage() {
                                   </span>
                                 </div>
                                 <div className="pt-2 border-t">
-                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Order Total</p>
-                                  <p className="font-bold text-xl text-primary">${order.totalAmount}</p>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Subtotal:</span>
+                                      <span className="font-medium">${(order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Tax & Fees:</span>
+                                      <span className="font-medium">${(order.totalAmount - order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t">
+                                      <span className="text-xs text-gray-500 uppercase tracking-wide">Order Total</span>
+                                      <span className="font-bold text-xl text-primary">${order.totalAmount?.toFixed(2) || '0.00'}</span>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
