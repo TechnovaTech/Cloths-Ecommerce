@@ -15,6 +15,7 @@ export function Navbar() {
   const { user, logout } = useAuth()
   const { wishlistCount } = useWishlist()
   const { cartCount } = useCart()
+  const userMenuRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +24,22 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [userMenuOpen])
 
   return (
     <nav
@@ -71,7 +88,7 @@ export function Navbar() {
           </Link>
           
           {/* User Menu */}
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             {user ? (
               <>
                 <button 
@@ -86,19 +103,27 @@ export function Navbar() {
                       <p className="font-medium">{user.name}</p>
                       <p className="text-sm text-gray-500">{user.email}</p>
                     </div>
-                    <Link href="/profile" className="block px-4 py-2 hover:bg-gray-50">
+                    <Link 
+                      href="/profile" 
+                      className="block px-4 py-2 hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
                       Profile
                     </Link>
-                    <Link href="/orders" className="block px-4 py-2 hover:bg-gray-50">
-                      Orders
-                    </Link>
                     {user.role === 'admin' && (
-                      <Link href="/admin" className="block px-4 py-2 hover:bg-gray-50">
+                      <Link 
+                        href="/admin" 
+                        className="block px-4 py-2 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
                         Admin Panel
                       </Link>
                     )}
                     <button 
-                      onClick={logout}
+                      onClick={() => {
+                        logout()
+                        setUserMenuOpen(false)
+                      }}
                       className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <LogOut size={16} />
