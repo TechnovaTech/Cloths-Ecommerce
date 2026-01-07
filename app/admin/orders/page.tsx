@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Filter, Eye, Edit, User, Package, Truck, CheckCircle, XCircle } from "lucide-react"
+import { Filter, Eye, Edit, User, Package, Truck, CheckCircle, XCircle, ChevronDown, ChevronUp, Mail, Calendar, CreditCard, MapPin } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
 import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
@@ -11,12 +11,16 @@ interface Order {
     _id: string
     name: string
     email: string
+    role?: string
+    createdAt?: string
   }
   items: Array<{
     product: {
       _id: string
       name: string
       images: string[]
+      price?: number
+      category?: string
     }
     quantity: number
     size?: string
@@ -25,13 +29,23 @@ interface Order {
   totalAmount: number
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   paymentStatus: 'pending' | 'paid' | 'failed'
+  paymentMethod?: string
+  shippingAddress?: {
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+  }
   createdAt: string
+  updatedAt?: string
 }
 
 export default function OrdersPage() {
   const [orders, setOrders] = React.useState<Order[]>([])
   const [loading, setLoading] = React.useState(true)
   const [statusFilter, setStatusFilter] = React.useState('all')
+  const [expandedOrder, setExpandedOrder] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     fetchOrders()
@@ -130,64 +144,206 @@ export default function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Order ID</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Order</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Customer</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Items</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Amount</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Status</th>
                 <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Date</th>
-                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Actions</th>
+                <th className="text-left py-4 px-6 text-xs uppercase tracking-widest font-bold text-gray-600">Details</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.map((order) => (
-                <tr key={order._id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-4 px-6 font-medium text-primary">#{order._id.slice(-8)}</td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User size={14} className="text-gray-600" />
+                <React.Fragment key={order._id}>
+                  <tr className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-6 font-medium text-primary">#{order._id.slice(-8)}</td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User size={14} className="text-gray-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{order.user?.name || 'Unknown'}</p>
+                          <p className="text-sm text-gray-600">{order.user?.email || 'No email'}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{order.user?.name || 'Unknown'}</p>
-                        <p className="text-sm text-gray-600">{order.user?.email || 'No email'}</p>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{order.items.length}</span>
+                        <span className="text-xs text-gray-500">items</span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{order.items.length}</span>
-                      <span className="text-xs text-gray-500">items</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 font-bold text-primary">${order.totalAmount}</td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(order.status)}
-                      <select
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                        className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(order.status)}`}
+                    </td>
+                    <td className="py-4 px-6 font-bold text-primary">${order.totalAmount}</td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(order.status)}
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                          className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(order.status)}`}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-gray-700">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-4 px-6">
+                      <button 
+                        onClick={() => setExpandedOrder(expandedOrder === order._id ? null : order._id)}
+                        className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded transition-colors"
                       >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-gray-700">
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1 text-gray-600 hover:text-primary">
-                        <Eye size={16} />
+                        {expandedOrder === order._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                  
+                  {/* Expanded Order Details */}
+                  {expandedOrder === order._id && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-6 bg-gray-50">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          {/* Order Items */}
+                          <div className="lg:col-span-2">
+                            <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                              <Package size={18} />
+                              Order Items ({order.items.length})
+                            </h4>
+                            <div className="space-y-3">
+                              {order.items.map((item, index) => (
+                                <div key={index} className="flex items-center gap-4 p-4 bg-white rounded-lg border shadow-sm">
+                                  <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img 
+                                      src={item.product?.images?.[0] || '/placeholder.svg'} 
+                                      alt={item.product?.name || 'Product'}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-grow">
+                                    <h5 className="font-medium text-gray-900 mb-1">{item.product?.name || 'Unknown Product'}</h5>
+                                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                                      <div>
+                                        <span className="font-medium">Quantity:</span> {item.quantity}
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Price:</span> ${item.price}
+                                      </div>
+                                      {item.size && (
+                                        <div>
+                                          <span className="font-medium">Size:</span> {item.size}
+                                        </div>
+                                      )}
+                                      <div>
+                                        <span className="font-medium">Total:</span> ${(item.price * item.quantity).toFixed(2)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Customer & Order Details */}
+                          <div className="space-y-6">
+                            {/* Customer Information */}
+                            <div className="bg-white rounded-lg border p-4">
+                              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <User size={18} />
+                                Customer Details
+                              </h4>
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Full Name</p>
+                                  <p className="font-medium">{order.user?.name || 'N/A'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Email</p>
+                                  <p className="font-medium flex items-center gap-2">
+                                    <Mail size={14} />
+                                    {order.user?.email || 'N/A'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Member Since</p>
+                                  <p className="font-medium flex items-center gap-2">
+                                    <Calendar size={14} />
+                                    {order.user?.createdAt ? new Date(order.user.createdAt).toLocaleDateString() : 'N/A'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Account Type</p>
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    order.user?.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {order.user?.role || 'customer'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Order Information */}
+                            <div className="bg-white rounded-lg border p-4">
+                              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <CreditCard size={18} />
+                                Payment & Order Info
+                              </h4>
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Order ID</p>
+                                  <p className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{order._id}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Order Date</p>
+                                  <p className="font-medium">{new Date(order.createdAt).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Payment Method</p>
+                                  <p className="font-medium capitalize">{order.paymentMethod || 'Card'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Payment Status</p>
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                                    order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                                    'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {order.paymentStatus || 'pending'}
+                                  </span>
+                                </div>
+                                <div className="pt-2 border-t">
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Order Total</p>
+                                  <p className="font-bold text-xl text-primary">${order.totalAmount}</p>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Shipping Address */}
+                            {order.shippingAddress && (
+                              <div className="bg-white rounded-lg border p-4">
+                                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                  <MapPin size={18} />
+                                  Shipping Address
+                                </h4>
+                                <div className="space-y-1 text-sm">
+                                  <p className="font-medium">{order.shippingAddress.street}</p>
+                                  <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                                  <p className="text-gray-600">{order.shippingAddress.country}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

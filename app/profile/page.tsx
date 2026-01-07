@@ -3,7 +3,7 @@
 import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { User, Package, Heart, Settings, MapPin, CreditCard, Bell, LogOut, Edit3, ShoppingBag } from "lucide-react"
+import { User, Package, Heart, Settings, MapPin, CreditCard, Bell, LogOut, Edit3, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import { useWishlist } from "@/contexts/WishlistContext"
@@ -48,11 +48,24 @@ const menuItems = [
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = React.useState("Profile")
+  const [expandedOrders, setExpandedOrders] = React.useState<Set<string>>(new Set())
   const { user, logout } = useAuth()
   const { wishlist, wishlistCount } = useWishlist()
   const { cartCount } = useCart()
   const [orders, setOrders] = React.useState([])
   const [wishlistProducts, setWishlistProducts] = React.useState([])
+
+  const toggleOrderExpansion = (orderId: string) => {
+    setExpandedOrders(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId)
+      } else {
+        newSet.add(orderId)
+      }
+      return newSet
+    })
+  }
 
   // Fetch user orders
   React.useEffect(() => {
@@ -233,31 +246,62 @@ export default function ProfilePage() {
                 <div className="bg-white border border-border rounded-sm p-8">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-serif italic">Recent Orders</h2>
-                    <button className="text-xs uppercase tracking-[0.2em] font-bold text-primary hover:text-accent smooth-transition">
+                    <button 
+                      onClick={() => setActiveTab("Orders")}
+                      className="text-xs uppercase tracking-[0.2em] font-bold text-primary hover:text-accent smooth-transition"
+                    >
                       View All
                     </button>
                   </div>
                   
                   <div className="space-y-4">
                     {orders.length > 0 ? orders.slice(0, 3).map((order) => (
-                      <div key={order._id} className="flex items-center gap-4 p-4 border border-border rounded-sm hover:bg-[#FAFAFA] smooth-transition">
-                        <div className="w-16 h-20 bg-[#F2F2F2] rounded-sm overflow-hidden flex-shrink-0">
-                          <Package size={24} className="w-full h-full p-4 text-gray-400" />
+                      <div key={order._id} className="border border-border rounded-sm p-4 hover:bg-[#FAFAFA] smooth-transition">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="font-medium">Order #{order._id.slice(-8)}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                            order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                            order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
+                          </span>
                         </div>
-                        <div className="flex-grow">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="font-medium">{order._id}</p>
-                              <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        
+                        {/* Show first few items */}
+                        {order.items && order.items.length > 0 && (
+                          <div className="mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 bg-[#F2F2F2] rounded-sm overflow-hidden flex-shrink-0">
+                                {order.items[0].product?.images?.[0] ? (
+                                  <Image
+                                    src={order.items[0].product.images[0]}
+                                    alt={order.items[0].product.name || 'Product'}
+                                    width={48}
+                                    height={48}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Package size={20} className="w-full h-full p-2 text-gray-400" />
+                                )}
+                              </div>
+                              <div className="flex-grow">
+                                <p className="text-sm font-medium">{order.items[0].product?.name || 'Product'}</p>
+                                {order.items.length > 1 && (
+                                  <p className="text-xs text-muted-foreground">+{order.items.length - 1} more items</p>
+                                )}
+                              </div>
                             </div>
-                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                              {order.status || 'Completed'}
-                            </span>
                           </div>
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm text-muted-foreground">{order.items?.length || 1} items</p>
-                            <p className="font-medium">${order.totalAmount || 0}</p>
-                          </div>
+                        )}
+                        
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-muted-foreground">{order.items?.length || 0} items</p>
+                          <p className="font-medium">${order.totalAmount?.toFixed(2) || '0.00'}</p>
                         </div>
                       </div>
                     )) : (
@@ -299,23 +343,128 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-serif italic mb-6">Order History</h2>
                 {orders.length > 0 ? (
                   <div className="space-y-4">
-                    {orders.map((order) => (
-                      <div key={order._id} className="border border-border rounded-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <p className="font-medium text-lg">Order #{order._id}</p>
-                            <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                    {orders.map((order) => {
+                      const isExpanded = expandedOrders.has(order._id)
+                      return (
+                        <div key={order._id} className="border border-border rounded-sm overflow-hidden">
+                          {/* Order Header - Always Visible */}
+                          <div 
+                            className="bg-[#FAFAFA] p-4 border-b border-border cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => toggleOrderExpansion(order._id)}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-white rounded-sm overflow-hidden flex-shrink-0">
+                                  {order.items?.[0]?.product?.images?.[0] ? (
+                                    <Image
+                                      src={order.items[0].product.images[0]}
+                                      alt={order.items[0].product.name || 'Product'}
+                                      width={48}
+                                      height={48}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                      <Package size={20} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium">Order #{order._id.slice(-8)}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {new Date(order.createdAt).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    })} • {order.items?.length || 0} items
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                  order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                  order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                                  order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
+                                </span>
+                                <p className="font-medium text-lg">${order.totalAmount?.toFixed(2) || '0.00'}</p>
+                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                              </div>
+                            </div>
                           </div>
-                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                            {order.status || 'Completed'}
-                          </span>
+                          
+                          {/* Order Details - Collapsible */}
+                          {isExpanded && (
+                            <div className="p-6 animate-in slide-in-from-top-2 duration-200">
+                              {/* Order Items */}
+                              <div className="space-y-3 mb-6">
+                                <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground">Items</h4>
+                                {order.items?.map((item, index) => (
+                                  <div key={index} className="flex items-center gap-4 p-3 bg-[#FAFAFA] rounded-sm">
+                                    <div className="w-14 h-16 bg-white rounded-sm overflow-hidden flex-shrink-0">
+                                      {item.product?.images?.[0] ? (
+                                        <Image
+                                          src={item.product.images[0]}
+                                          alt={item.product.name || 'Product'}
+                                          width={56}
+                                          height={64}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                          <Package size={20} className="text-gray-400" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex-grow">
+                                      <h5 className="font-medium mb-1">{item.product?.name || 'Product'}</h5>
+                                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                        {item.size && <span>Size: {item.size}</span>}
+                                        {item.color && <span>Color: {item.color}</span>}
+                                        <span>Qty: {item.quantity}</span>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="font-medium">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                                      <p className="text-sm text-muted-foreground">${item.price?.toFixed(2) || '0.00'} each</p>
+                                    </div>
+                                  </div>
+                                )) || (
+                                  <div className="text-center py-4 text-muted-foreground">
+                                    No items found
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Additional Details */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Shipping Address */}
+                                {order.shippingAddress && (
+                                  <div>
+                                    <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-2">Shipping Address</h4>
+                                    <p className="text-sm">
+                                      {order.shippingAddress.street}<br />
+                                      {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}<br />
+                                      {order.shippingAddress.country}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {/* Payment Info */}
+                                <div>
+                                  <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-2">Payment</h4>
+                                  <p className="text-sm mb-1">{order.paymentMethod || 'N/A'}</p>
+                                  <p className="text-lg font-bold">${order.totalAmount?.toFixed(2) || '0.00'}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex justify-between items-center">
-                          <p className="text-muted-foreground">{order.items?.length || 1} items</p>
-                          <p className="text-xl font-medium">${order.totalAmount || 0}</p>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-12">

@@ -7,12 +7,19 @@ export async function GET() {
     await dbConnect();
     
     const orders = await Order.find()
-      .populate('user', 'name email')
-      .populate('items.product', 'name images')
+      .populate({
+        path: 'user',
+        select: 'name email role createdAt'
+      })
+      .populate({
+        path: 'items.product',
+        select: 'name images price category'
+      })
       .sort({ createdAt: -1 });
     
     return NextResponse.json(orders);
   } catch (error) {
+    console.error('Admin orders fetch error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
