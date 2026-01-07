@@ -316,11 +316,11 @@ export default function ProductsAdmin() {
                       />
                     </div>
                   </td>
-                  <td className="py-4 px-6 text-gray-700">${product.price}</td>
+                  <td className="py-4 px-6 text-gray-900 font-semibold">₹{product.price}</td>
                   <td className="py-4 px-6 text-gray-700">
                     {product.discount > 0 ? (
                       <span className="text-green-600 font-medium">
-                        {product.discountType === 'percentage' ? `${product.discount}%` : `$${product.discount}`}
+                        {product.discountType === 'percentage' ? `${product.discount}%` : `₹${product.discount}`}
                       </span>
                     ) : (
                       <span className="text-gray-400">No discount</span>

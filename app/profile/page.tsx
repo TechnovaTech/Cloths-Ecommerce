@@ -291,6 +291,10 @@ export default function ProfilePage() {
                               </div>
                               <div className="flex-grow">
                                 <p className="text-sm font-medium">{order.items[0].product?.name || 'Product'}</p>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  {order.items[0].size && <span>Size: {order.items[0].size}</span>}
+                                  {order.items[0].color && <span>• Color: {order.items[0].color}</span>}
+                                </div>
                                 {order.items.length > 1 && (
                                   <p className="text-xs text-muted-foreground">+{order.items.length - 1} more items</p>
                                 )}
@@ -301,7 +305,7 @@ export default function ProfilePage() {
                         
                         <div className="flex justify-between items-center">
                           <p className="text-sm text-muted-foreground">{order.items?.length || 0} items</p>
-                          <p className="font-medium">${order.totalAmount?.toFixed(2) || '0.00'}</p>
+                          <p className="font-bold text-gray-900">₹{order.totalAmount?.toFixed(2) || '0.00'}</p>
                         </div>
                       </div>
                     )) : (
@@ -390,7 +394,7 @@ export default function ProfilePage() {
                                 }`}>
                                   {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
                                 </span>
-                                <p className="font-medium text-lg">${order.totalAmount?.toFixed(2) || '0.00'}</p>
+                                <p className="font-bold text-gray-900">₹{order.totalAmount?.toFixed(2) || '0.00'}</p>
                                 {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                               </div>
                             </div>
@@ -428,8 +432,8 @@ export default function ProfilePage() {
                                       </div>
                                     </div>
                                     <div className="text-right">
-                                      <p className="font-medium">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
-                                      <p className="text-sm text-muted-foreground">${item.price?.toFixed(2) || '0.00'} each</p>
+                                      <p className="font-bold text-gray-900">₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                                      <p className="text-sm text-gray-600">₹{item.price?.toFixed(2) || '0.00'} each</p>
                                     </div>
                                   </div>
                                 )) || (
@@ -457,7 +461,7 @@ export default function ProfilePage() {
                                 <div>
                                   <h4 className="font-medium text-sm uppercase tracking-wider text-muted-foreground mb-2">Payment</h4>
                                   <p className="text-sm mb-1">{order.paymentMethod || 'N/A'}</p>
-                                  <p className="text-lg font-bold">${order.totalAmount?.toFixed(2) || '0.00'}</p>
+                                  <p className="text-lg font-bold text-gray-900">₹{order.totalAmount?.toFixed(2) || '0.00'}</p>
                                 </div>
                               </div>
                             </div>

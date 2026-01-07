@@ -321,14 +321,14 @@ export default function CheckoutPage() {
                         <Image src={item.image} alt={item.name} width={80} height={96} className="object-cover w-full h-full" />
                       </div>
                       <div className="flex-grow">
-                        <h3 className="font-serif text-lg mb-1">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
+                        <p className="text-sm font-medium text-gray-800 mb-2">
                           {item.size && `Size: ${item.size}`}
                           {item.color && ` | Color: ${item.color}`}
                         </p>
                         <div className="flex justify-between">
-                          <span className="text-sm">Qty: {item.quantity}</span>
-                          <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="text-sm font-medium text-gray-800">Qty: {item.quantity}</span>
+                          <span className="font-bold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -362,21 +362,21 @@ export default function CheckoutPage() {
               
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-sm">Subtotal</span>
-                  <span className="text-sm">${cartTotal.toFixed(2)}</span>
+                  <span className="text-sm font-medium text-gray-800">Subtotal</span>
+                  <span className="text-sm font-bold text-gray-900">₹{cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">Shipping</span>
-                  <span className="text-sm">{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                  <span className="text-sm font-medium text-gray-800">Shipping</span>
+                  <span className="text-sm font-bold text-gray-900">{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">Tax</span>
-                  <span className="text-sm">${tax}</span>
+                  <span className="text-sm font-medium text-gray-800">Tax</span>
+                  <span className="text-sm font-bold text-gray-900">₹{tax}</span>
                 </div>
                 <div className="border-t border-border pt-4">
-                  <div className="flex justify-between font-medium text-lg">
+                  <div className="flex justify-between font-bold text-lg text-gray-900">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-gray-900">₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -388,7 +388,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <Truck size={14} />
-                  Free shipping on orders over $300
+                  Free shipping on orders over ₹300
                 </div>
               </div>
             </div>

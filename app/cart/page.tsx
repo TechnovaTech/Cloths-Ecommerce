@@ -92,7 +92,7 @@ export default function CartPage() {
                           <Plus size={14} />
                         </button>
                       </div>
-                      <p className="text-lg font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-lg font-bold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -108,20 +108,20 @@ export default function CartPage() {
                 
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between">
-                    <span className="text-sm">Subtotal</span>
-                    <span className="text-sm">${cartTotal.toFixed(2)}</span>
+                    <span className="text-sm font-medium text-gray-800">Subtotal</span>
+                    <span className="text-sm font-bold text-gray-900">₹{cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm">Shipping</span>
-                    <span className="text-sm">{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                    <span className="text-sm font-medium text-gray-800">Shipping</span>
+                    <span className="text-sm font-bold text-gray-900">{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
                   </div>
                   {shipping === 0 && (
-                    <p className="text-xs text-green-600">Free shipping on orders over $300</p>
+                    <p className="text-xs text-green-600">Free shipping on orders over ₹300</p>
                   )}
                   <div className="border-t border-border pt-4">
-                    <div className="flex justify-between font-medium">
+                    <div className="flex justify-between font-bold text-lg text-gray-900">
                       <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-gray-900">₹{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -216,14 +216,14 @@ export default function ProductPage() {
             <div className="mb-8">
               {product.discount && product.discount > 0 ? (
                 <div className="flex items-center gap-4 mb-2">
-                  <span className="text-4xl font-bold tracking-wide text-black">
+                  <span className="text-4xl font-bold tracking-wide text-gray-900">
                     ₹{
                       product.discountType === 'percentage' 
                         ? (product.price - (product.price * product.discount / 100)).toFixed(0)
                         : (product.price - product.discount).toFixed(0)
                     }
                   </span>
-                  <span className="text-2xl text-gray-500 line-through font-medium">
+                  <span className="text-2xl text-gray-600 line-through font-medium">
                     ₹{product.price}
                   </span>
                   <span className="text-white text-sm px-4 py-2 rounded-full font-bold uppercase tracking-wide" style={{backgroundColor: '#c2a875'}}>

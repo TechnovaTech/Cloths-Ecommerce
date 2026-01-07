@@ -147,14 +147,14 @@ export function FeaturedProducts() {
                 {/* Price with discount */}
                 {product.discount && product.discount > 0 ? (
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-lg font-bold text-black">
+                    <p className="text-lg font-bold text-gray-900">
                       ₹{
                         product.discountType === 'percentage' 
                           ? (product.price - (product.price * product.discount / 100)).toFixed(0)
                           : (product.price - product.discount).toFixed(0)
                       }
                     </p>
-                    <p className="text-sm text-gray-500 line-through font-medium">
+                    <p className="text-sm text-gray-600 line-through font-medium">
                       ₹{product.price}
                     </p>
                   </div>
