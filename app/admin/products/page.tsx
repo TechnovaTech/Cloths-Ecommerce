@@ -67,6 +67,14 @@ export default function ProductsAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validate images - require at least 3 images
+    const validImages = productForm.images.filter(img => img !== "")
+    if (validImages.length < 3) {
+      alert('Please add at least 3 product images before submitting.')
+      return
+    }
+    
     try {
       const url = editingProduct ? `/api/products/${editingProduct._id}` : '/api/products'
       const method = editingProduct ? 'PUT' : 'POST'
@@ -543,11 +551,14 @@ export default function ProductsAdmin() {
 
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Product Images
+                  Product Images <span className="text-red-500">*</span>
+                  <span className="text-xs normal-case text-gray-500 ml-2">(Minimum 3 images required)</span>
                 </label>
                 <div className="grid grid-cols-3 gap-4">
                   {[0, 1, 2, 3, 4].map((index) => (
-                    <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center">
+                    <div key={index} className={`border-2 border-dashed rounded-sm p-4 text-center ${
+                      index < 3 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}>
                       <input
                         type="file"
                         accept="image/*"
@@ -566,6 +577,9 @@ export default function ProductsAdmin() {
                         }}
                         className="w-full text-sm"
                       />
+                      {index < 3 && (
+                        <p className="text-xs text-red-600 mt-1">Required</p>
+                      )}
                       {productForm.images[index] && (
                         <div className="mt-2">
                           <img src={productForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
@@ -573,6 +587,10 @@ export default function ProductsAdmin() {
                       )}
                     </div>
                   ))}
+                </div>
+                <div className="mt-2 text-xs text-gray-600">
+                  Images uploaded: {productForm.images.filter(img => img !== "").length}/5 
+                  <span className="text-red-600">(Minimum 3 required)</span>
                 </div>
               </div>
 

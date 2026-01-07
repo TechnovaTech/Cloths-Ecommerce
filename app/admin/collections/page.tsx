@@ -66,11 +66,18 @@ export default function CollectionsAdmin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validate that at least 1 image is required
+    const validImages = collectionForm.images.filter(img => img && img.trim() !== '')
+    if (validImages.length < 1) {
+      alert('Please add at least 1 collection image before submitting.')
+      return
+    }
+    
     const formData = {
       name: collectionForm.name,
       description: collectionForm.description,
       products: collectionForm.products,
-      images: collectionForm.images.filter(img => img && img.trim() !== ''),
+      images: validImages,
       status: collectionForm.status
     }
     
@@ -325,11 +332,14 @@ export default function CollectionsAdmin() {
 
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Collection Images (2 Images)
+                  Collection Images <span className="text-red-500">*</span>
+                  <span className="text-xs normal-case text-gray-500 ml-2">(At least 1 image required)</span>
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {[0, 1].map((index) => (
-                    <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center hover:border-accent smooth-transition">
+                    <div key={index} className={`border-2 border-dashed rounded-sm p-4 text-center hover:border-accent smooth-transition ${
+                      index === 0 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}>
                       <input
                         type="file"
                         accept="image/*"
@@ -341,6 +351,9 @@ export default function CollectionsAdmin() {
                         }}
                         className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
                       />
+                      {index === 0 && (
+                        <p className="text-xs text-red-600 mt-1">Required</p>
+                      )}
                       {collectionForm.images[index] && (
                         <div className="mt-2">
                           <img src={collectionForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
@@ -348,6 +361,10 @@ export default function CollectionsAdmin() {
                       )}
                     </div>
                   ))}
+                </div>
+                <div className="mt-2 text-xs text-gray-600">
+                  Images uploaded: {collectionForm.images.filter(img => img && img.trim() !== '').length}/2
+                  <span className="text-red-600 ml-1">(Minimum 1 required)</span>
                 </div>
               </div>
 

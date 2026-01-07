@@ -62,6 +62,12 @@ export default function CategoriesAdmin() {
     // Ensure images array exists and filter out empty values
     const validImages = (categoryForm.images || []).filter(img => img && img.trim() !== '' && img !== 'data:')
     
+    // Validate that at least 1 image is required
+    if (validImages.length < 1) {
+      alert('Please add at least 1 category image before submitting.')
+      return
+    }
+    
     const formData = {
       name: categoryForm.name,
       description: categoryForm.description,
@@ -282,11 +288,14 @@ export default function CategoriesAdmin() {
 
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                  Category Images (Up to 2 Images)
+                  Category Images <span className="text-red-500">*</span>
+                  <span className="text-xs normal-case text-gray-500 ml-2">(At least 1 image required)</span>
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {[0, 1].map((index) => (
-                    <div key={index} className="border-2 border-dashed border-gray-300 rounded-sm p-4 text-center hover:border-accent smooth-transition">
+                    <div key={index} className={`border-2 border-dashed rounded-sm p-4 text-center hover:border-accent smooth-transition ${
+                      index === 0 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}>
                       <input
                         type="file"
                         accept="image/*"
@@ -298,6 +307,9 @@ export default function CategoriesAdmin() {
                         }}
                         className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-xs file:font-medium file:bg-primary file:text-white hover:file:bg-accent"
                       />
+                      {index === 0 && (
+                        <p className="text-xs text-red-600 mt-1">Required</p>
+                      )}
                       {categoryForm.images[index] && (
                         <div className="mt-2">
                           <img src={categoryForm.images[index]} alt="Preview" className="w-16 h-16 object-cover rounded mx-auto" />
@@ -308,7 +320,8 @@ export default function CategoriesAdmin() {
                   ))}
                 </div>
                 <div className="mt-2 text-xs text-gray-600">
-                  Current images: {categoryForm.images.filter(img => img && img.trim()).length}
+                  Images uploaded: {categoryForm.images.filter(img => img && img.trim()).length}/2
+                  <span className="text-red-600 ml-1">(Minimum 1 required)</span>
                 </div>
               </div>
               
