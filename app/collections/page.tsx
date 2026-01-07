@@ -154,7 +154,7 @@ export default function CollectionsPage() {
         <div className="max-w-screen-2xl mx-auto">
           <div className="flex justify-between items-end">
             <div>
-              <h1 className="text-5xl md:text-6xl font-serif italic mb-4">Collections</h1>
+              <h1 className="text-5xl md:text-6xl font-bold mb-4">Collections</h1>
               <p className="text-muted-foreground text-sm uppercase tracking-[0.2em] max-w-2xl">
                 Curated selections that define modern luxury and timeless elegance
               </p>
@@ -199,7 +199,7 @@ export default function CollectionsPage() {
                   <p className="text-xs uppercase tracking-[0.3em] font-bold mb-4 opacity-90">
                     Latest Collection
                   </p>
-                  <h2 className="text-4xl md:text-6xl font-serif italic mb-6 leading-tight">
+                  <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
                     {collections[0].name}
                   </h2>
                   <p className="text-xl mb-8 opacity-90 leading-relaxed">
@@ -250,7 +250,7 @@ export default function CollectionsPage() {
 
                     {/* Collection Details */}
                     <div className="text-center">
-                      <h3 className="text-2xl font-serif italic mb-2 group-hover:text-accent smooth-transition">
+                      <h3 className="text-2xl font-bold mb-2 group-hover:text-accent smooth-transition">
                         {collection.name}
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -382,7 +382,7 @@ export default function CollectionsPage() {
       <section className="mt-24 px-6 md:px-12">
         <div className="max-w-screen-2xl mx-auto">
           <div className="bg-[#FAFAFA] p-12 md:p-16 rounded-sm text-center">
-            <h2 className="text-3xl md:text-4xl font-serif italic mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Stay Updated
             </h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">

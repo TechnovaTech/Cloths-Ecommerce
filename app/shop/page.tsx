@@ -90,7 +90,7 @@ export default function ShopPage() {
     <div className="pt-32 pb-24 px-6 md:px-12 bg-background min-h-screen">
       {/* Header */}
       <div className="max-w-screen-2xl mx-auto mb-16">
-        <h1 className="text-5xl md:text-6xl font-serif italic mb-4">
+        <h1 className="text-5xl md:text-6xl font-bold mb-4">
           {activeCategory === "All" ? "Shop Collection" : `${activeCategory} Collection`}
         </h1>
         <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
@@ -109,7 +109,7 @@ export default function ShopPage() {
                 "text-[10px] uppercase tracking-[0.3em] font-bold whitespace-nowrap smooth-transition",
                 activeCategory === cat
                   ? "text-primary border-b border-primary pb-1"
-                  : "text-muted-foreground hover:text-primary",
+                  : "text-gray-800 hover:text-primary",
               )}
             >
               {cat}
@@ -120,7 +120,7 @@ export default function ShopPage() {
         <div className="flex items-center justify-between w-full md:w-auto gap-8">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold hover:text-accent smooth-transition"
+            className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-gray-800 hover:text-accent smooth-transition"
           >
             <SlidersHorizontal size={14} />
             Filters
