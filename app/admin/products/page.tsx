@@ -677,18 +677,18 @@ export default function ProductsAdmin() {
                       <div className="grid grid-cols-3 gap-3">
                         <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
                           <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Original</span>
-                          <p className="text-lg font-bold text-gray-500 line-through">${viewingProduct.price}</p>
+                          <p className="text-lg font-bold text-gray-500 line-through">₹{viewingProduct.price}</p>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
                           <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Discount</span>
                           <p className="text-lg font-bold text-black">
-                            {viewingProduct.discountType === 'percentage' ? `${viewingProduct.discount}%` : `$${viewingProduct.discount}`}
+                            {viewingProduct.discountType === 'percentage' ? `${viewingProduct.discount}%` : `₹${viewingProduct.discount}`}
                           </p>
                         </div>
                         <div className="bg-black text-white rounded-lg p-3 text-center">
                           <span className="text-xs uppercase tracking-wide text-gray-300 font-medium block mb-1">Final Price</span>
                           <p className="text-lg font-bold">
-                            ${
+                            ₹{
                               viewingProduct.discountType === 'percentage' 
                                 ? (viewingProduct.price - (viewingProduct.price * viewingProduct.discount / 100)).toFixed(2)
                                 : (viewingProduct.price - viewingProduct.discount).toFixed(2)
@@ -746,7 +746,7 @@ export default function ProductsAdmin() {
                         </div>
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                           <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Price</span>
-                          <p className="text-xl font-bold text-black">${viewingProduct.price}</p>
+                          <p className="text-xl font-bold text-black">₹{viewingProduct.price}</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-3">

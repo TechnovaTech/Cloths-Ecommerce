@@ -208,31 +208,30 @@ export default function ProductPage() {
         {/* Product Info */}
         <div className="lg:w-2/5 lg:sticky lg:top-32 h-fit">
           <div className="mb-10">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold mb-4">{product.category}</p>
-            <h1 className="text-4xl md:text-5xl font-serif italic mb-6 leading-tight">{product.name}</h1>
-            <p className="text-2xl font-light tracking-widest mb-8">${product.price}.00</p>
+            <p className="text-sm font-bold uppercase tracking-[0.3em] text-accent font-medium mb-4">{product.category}</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">{product.name}</h1>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">{product.description}</p>
             
             {/* Price with discount */}
             <div className="mb-8">
               {product.discount && product.discount > 0 ? (
                 <div className="flex items-center gap-4 mb-2">
-                  <span className="text-3xl font-light tracking-widest text-red-600">
-                    ${
+                  <span className="text-4xl font-bold tracking-wide text-black">
+                    ₹{
                       product.discountType === 'percentage' 
                         ? (product.price - (product.price * product.discount / 100)).toFixed(0)
                         : (product.price - product.discount).toFixed(0)
-                    }.00
+                    }
                   </span>
-                  <span className="text-xl text-gray-500 line-through">
-                    ${product.price}.00
+                  <span className="text-2xl text-gray-500 line-through font-medium">
+                    ₹{product.price}
                   </span>
-                  <span className="bg-accent text-white text-sm px-3 py-1 rounded-full font-bold">
-                    {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
+                  <span className="text-white text-sm px-4 py-2 rounded-full font-bold uppercase tracking-wide" style={{backgroundColor: '#c2a875'}}>
+                    {product.discountType === 'percentage' ? `${product.discount}% OFF` : `₹${product.discount} OFF`}
                   </span>
                 </div>
               ) : (
-                <p className="text-3xl font-light tracking-widest mb-8">${product.price}.00</p>
+                <p className="text-4xl font-bold tracking-wide mb-8 text-gray-900">₹{product.price}</p>
               )}
             </div>
           </div>

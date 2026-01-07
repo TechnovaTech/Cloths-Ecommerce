@@ -97,7 +97,7 @@ export function CategoryScroll() {
                 />
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 smooth-transition" />
                 <div className="absolute inset-x-0 bottom-0 p-8 text-center translate-y-4 group-hover:translate-y-0 smooth-transition">
-                  <h3 className="text-white text-4xl font-serif italic mb-2">{cat.name}</h3>
+                  <h3 className="text-white text-4xl font-bold mb-2">{cat.name}</h3>
                   <span className="text-white/0 group-hover:text-white/100 text-sm uppercase tracking-[0.3em] smooth-transition">
                     Explore
                   </span>

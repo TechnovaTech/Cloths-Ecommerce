@@ -176,7 +176,7 @@ export default function ShopPage() {
                 <div>
                   <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-6">Price Range</h3>
                   <div className="space-y-4">
-                    {["$0 - $200", "$200 - $500", "$500+"].map((range) => (
+                    {["₹0 - ₹200", "₹200 - ₹500", "₹500+"].map((range) => (
                       <label key={range} className="flex items-center gap-3 cursor-pointer group">
                         <div className="w-4 h-4 border border-border group-hover:border-accent smooth-transition" />
                         <span className="text-sm text-muted-foreground group-hover:text-primary smooth-transition">
@@ -248,7 +248,7 @@ export default function ShopPage() {
                     {product.discount && product.discount > 0 && (
                       <div className="absolute top-4 left-4">
                         <span className="bg-accent text-white text-xs px-2 py-1 rounded-full font-bold">
-                          {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
+                          {product.discountType === 'percentage' ? `${product.discount}% OFF` : `₹${product.discount} OFF`}
                         </span>
                       </div>
                     )}
@@ -258,7 +258,7 @@ export default function ShopPage() {
                     <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
                       {product.category}
                     </p>
-                    <h3 className="text-xl font-serif italic mb-2 group-hover:text-accent smooth-transition">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-accent smooth-transition">
                       {product.name}
                     </h3>
                     
@@ -266,19 +266,19 @@ export default function ShopPage() {
                     <div className="flex items-center gap-2 justify-center">
                       {product.discount && product.discount > 0 ? (
                         <>
-                          <span className="text-lg font-bold tracking-widest text-red-600">
-                            ${
+                          <span className="text-xl font-bold tracking-wide text-black">
+                            ₹{
                               product.discountType === 'percentage' 
                                 ? (product.price - (product.price * product.discount / 100)).toFixed(0)
                                 : (product.price - product.discount).toFixed(0)
                             }
                           </span>
-                          <span className="text-sm text-gray-500 line-through">
-                            ${product.price}
+                          <span className="text-base text-gray-500 line-through font-medium">
+                            ₹{product.price}
                           </span>
                         </>
                       ) : (
-                        <span className="text-lg font-bold tracking-widest">${product.price}</span>
+                        <span className="text-xl font-bold tracking-wide text-black">₹{product.price}</span>
                       )}
                     </div>
 

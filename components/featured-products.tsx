@@ -114,7 +114,7 @@ export function FeaturedProducts() {
                 {/* Discount badge */}
                 {product.discount && product.discount > 0 && (
                   <span className="absolute top-6 left-6 px-3 py-1 bg-accent text-white text-[9px] uppercase tracking-widest font-bold rounded-full">
-                    {product.discountType === 'percentage' ? `${product.discount}% OFF` : `$${product.discount} OFF`}
+                    {product.discountType === 'percentage' ? `${product.discount}% OFF` : `₹${product.discount} OFF`}
                   </span>
                 )}
 
@@ -142,24 +142,24 @@ export function FeaturedProducts() {
 
             <div className="flex justify-between items-start px-2">
               <div>
-                <h3 className="text-lg font-serif mb-1">{product.name}</h3>
+                <h3 className="text-xl font-bold mb-2">{product.name}</h3>
                 
                 {/* Price with discount */}
                 {product.discount && product.discount > 0 ? (
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-bold text-red-600">
-                      ${
+                    <p className="text-lg font-bold text-black">
+                      ₹{
                         product.discountType === 'percentage' 
                           ? (product.price - (product.price * product.discount / 100)).toFixed(0)
                           : (product.price - product.discount).toFixed(0)
                       }
                     </p>
-                    <p className="text-xs text-gray-500 line-through">
-                      ${product.price}
+                    <p className="text-sm text-gray-500 line-through font-medium">
+                      ₹{product.price}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">${product.price}</p>
+                  <p className="text-lg font-bold text-gray-900 tracking-wide">₹{product.price}</p>
                 )}
               </div>
               <div className="flex gap-1 mt-1">

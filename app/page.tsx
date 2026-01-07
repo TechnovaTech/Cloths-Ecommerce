@@ -39,7 +39,7 @@ export default function Home() {
           {[
             { title: "Premium Quality", desc: "Sourced from the finest mills worldwide." },
             { title: "Sustainable", desc: "Commitment to ethical production & fabrics." },
-            { title: "Fast Shipping", desc: "Complimentary global delivery on orders $300+." },
+            { title: "Fast Shipping", desc: "Complimentary global delivery on orders ₹300+." },
             { title: "Easy Returns", desc: "30-day seamless return & exchange policy." },
           ].map((item, i) => (
             <div key={item.title} className="text-center group">
