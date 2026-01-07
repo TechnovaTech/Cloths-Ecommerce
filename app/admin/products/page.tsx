@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Edit, Trash2, X, Heart, Eye } from "lucide-react"
+import { Plus, Edit, Trash2, X, Heart, Eye, Search } from "lucide-react"
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
@@ -13,6 +13,7 @@ export default function ProductsAdmin() {
   const [showDetailModal, setShowDetailModal] = React.useState(false)
   const [editingProduct, setEditingProduct] = React.useState(null)
   const [viewingProduct, setViewingProduct] = React.useState(null)
+  const [searchTerm, setSearchTerm] = React.useState("")
   const [productForm, setProductForm] = React.useState({
     name: "",
     description: "",
@@ -24,7 +25,7 @@ export default function ProductsAdmin() {
     sizes: [],
     sizeStock: [],
     featured: false,
-    images: ["", "", "", "", ""],
+    images: ["", "", "", ""],
     minStock: "",
     maxStock: "",
     discount: "",
@@ -68,10 +69,10 @@ export default function ProductsAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validate images - require at least 3 images
+    // Validate images - require at least 2 images
     const validImages = productForm.images.filter(img => img !== "")
-    if (validImages.length < 3) {
-      alert('Please add at least 3 product images before submitting.')
+    if (validImages.length < 2) {
+      alert('Please add at least 2 product images before submitting.')
       return
     }
     
@@ -98,7 +99,8 @@ export default function ProductsAdmin() {
         maxStock: productForm.maxStock ? Number(productForm.maxStock) : undefined,
         discount: productForm.discount ? Number(productForm.discount) : 0,
         discountType: productForm.discountType || 'percentage',
-        images: productForm.images.filter(img => img !== "")
+        images: productForm.images.filter(img => img !== ""),
+        sku: productForm.sku && productForm.sku.trim() !== '' ? productForm.sku.trim() : undefined
       }
       
       console.log('=== ADMIN FORM SUBMIT DEBUG ===');
@@ -124,7 +126,7 @@ export default function ProductsAdmin() {
       } else {
         const errorData = await res.json()
         console.error('API Error:', errorData)
-        alert('Error saving product: ' + (errorData.error || 'Unknown error'))
+        alert(`Error saving product: ${errorData.error || 'Unknown error'}${errorData.details ? ` - ${errorData.details}` : ''}`)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -139,7 +141,7 @@ export default function ProductsAdmin() {
     
     setEditingProduct(product)
     const productImages = product.images || []
-    const paddedImages = [...productImages, "", "", "", "", ""].slice(0, 5)
+    const paddedImages = [...productImages, "", "", "", ""].slice(0, 4)
     
     // Ensure sizeStock is properly loaded with debugging
     let sizeStock = []
@@ -223,7 +225,7 @@ export default function ProductsAdmin() {
       sizes: [],
       sizeStock: [],
       featured: false,
-      images: ["", "", "", "", ""],
+      images: ["", "", "", ""],
       minStock: "",
       maxStock: "",
       discount: "",
@@ -255,6 +257,13 @@ export default function ProductsAdmin() {
     setProductForm({ ...productForm, sizeStock: newSizeStock })
   }
 
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
   if (loading) {
     return (
       <AdminAuthWrapper>
@@ -273,13 +282,25 @@ export default function ProductsAdmin() {
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h3 className="text-lg font-serif font-bold text-primary">Products Management</h3>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Add Product
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm w-64"
+              />
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Add Product
+            </button>
+          </div>
         </div>
         
         <div className="overflow-x-auto">
@@ -296,7 +317,7 @@ export default function ProductsAdmin() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr key={product._id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-6">
                     <div>
@@ -319,7 +340,7 @@ export default function ProductsAdmin() {
                   <td className="py-4 px-6 text-gray-900 font-semibold">₹{product.price}</td>
                   <td className="py-4 px-6 text-gray-700">
                     {product.discount > 0 ? (
-                      <span className="text-green-600 font-medium">
+                      <span className="text-black font-bold">
                         {product.discountType === 'percentage' ? `${product.discount}%` : `₹${product.discount}`}
                       </span>
                     ) : (
@@ -368,6 +389,13 @@ export default function ProductsAdmin() {
                   </td>
                 </tr>
               ))}
+              {filteredProducts.length === 0 && searchTerm && (
+                <tr>
+                  <td colSpan="7" className="py-8 text-center text-gray-500">
+                    No products found matching "{searchTerm}"
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -552,12 +580,12 @@ export default function ProductsAdmin() {
               <div>
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
                   Product Images <span className="text-red-500">*</span>
-                  <span className="text-xs normal-case text-gray-500 ml-2">(Minimum 3 images required)</span>
+                  <span className="text-xs normal-case text-gray-500 ml-2">(Minimum 2 images required)</span>
                 </label>
-                <div className="grid grid-cols-3 gap-4">
-                  {[0, 1, 2, 3, 4].map((index) => (
+                <div className="grid grid-cols-2 gap-4">
+                  {[0, 1, 2, 3].map((index) => (
                     <div key={index} className={`border-2 border-dashed rounded-sm p-4 text-center ${
-                      index < 3 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      index < 2 ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}>
                       <input
                         type="file"
@@ -577,7 +605,7 @@ export default function ProductsAdmin() {
                         }}
                         className="w-full text-sm"
                       />
-                      {index < 3 && (
+                      {index < 2 && (
                         <p className="text-xs text-red-600 mt-1">Required</p>
                       )}
                       {productForm.images[index] && (
@@ -589,8 +617,8 @@ export default function ProductsAdmin() {
                   ))}
                 </div>
                 <div className="mt-2 text-xs text-gray-600">
-                  Images uploaded: {productForm.images.filter(img => img !== "").length}/5 
-                  <span className="text-red-600">(Minimum 3 required)</span>
+                  Images uploaded: {productForm.images.filter(img => img !== "").length}/4 
+                  <span className="text-red-600">(Minimum 2 required)</span>
                 </div>
               </div>
 
@@ -670,35 +698,6 @@ export default function ProductsAdmin() {
                     </div>
                   </div>
 
-                  {/* Discount Information */}
-                  {viewingProduct.discount > 0 && (
-                    <div className="bg-white rounded-lg p-5 border border-gray-200">
-                      <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Discount & Pricing</h4>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
-                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Original</span>
-                          <p className="text-lg font-bold text-gray-500 line-through">₹{viewingProduct.price}</p>
-                        </div>
-                        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
-                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Discount</span>
-                          <p className="text-lg font-bold text-black">
-                            {viewingProduct.discountType === 'percentage' ? `${viewingProduct.discount}%` : `₹${viewingProduct.discount}`}
-                          </p>
-                        </div>
-                        <div className="bg-black text-white rounded-lg p-3 text-center">
-                          <span className="text-xs uppercase tracking-wide text-gray-300 font-medium block mb-1">Final Price</span>
-                          <p className="text-lg font-bold">
-                            ₹{
-                              viewingProduct.discountType === 'percentage' 
-                                ? (viewingProduct.price - (viewingProduct.price * viewingProduct.discount / 100)).toFixed(2)
-                                : (viewingProduct.price - viewingProduct.discount).toFixed(2)
-                            }
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Stock Information */}
                   <div className="bg-white rounded-lg p-5 border border-gray-200">
                     <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Stock Information</h4>
@@ -749,11 +748,7 @@ export default function ProductsAdmin() {
                           <p className="text-xl font-bold text-black">₹{viewingProduct.price}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">SKU</span>
-                          <p className="text-base font-semibold text-black">{viewingProduct.sku || 'Not Set'}</p>
-                        </div>
+                      <div className="grid grid-cols-1 gap-3">
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                           <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Status</span>
                           <div className="flex gap-1 mt-1">
@@ -782,6 +777,35 @@ export default function ProductsAdmin() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Discount Information */}
+                  {viewingProduct.discount > 0 && (
+                    <div className="bg-white rounded-lg p-5 border border-gray-200">
+                      <h4 className="text-sm font-bold text-black mb-4 uppercase tracking-wide">Discount & Pricing</h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Original</span>
+                          <p className="text-lg font-bold text-gray-500 line-through">₹{viewingProduct.price}</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
+                          <span className="text-xs uppercase tracking-wide text-gray-600 font-medium block mb-1">Discount</span>
+                          <p className="text-lg font-bold text-black">
+                            {viewingProduct.discountType === 'percentage' ? `${viewingProduct.discount}%` : `₹${viewingProduct.discount}`}
+                          </p>
+                        </div>
+                        <div className="bg-black text-white rounded-lg p-3 text-center">
+                          <span className="text-xs uppercase tracking-wide text-gray-300 font-medium block mb-1">Final Price</span>
+                          <p className="text-lg font-bold text-white">
+                            ₹{
+                              viewingProduct.discountType === 'percentage' 
+                                ? (viewingProduct.price - (viewingProduct.price * viewingProduct.discount / 100)).toFixed(2)
+                                : (viewingProduct.price - viewingProduct.discount).toFixed(2)
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Offer Tag */}
                   {viewingProduct.offerTag && (

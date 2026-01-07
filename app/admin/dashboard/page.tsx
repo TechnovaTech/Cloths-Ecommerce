@@ -7,17 +7,17 @@ import AdminAuthWrapper from "@/components/admin/AdminAuthWrapper"
 import Link from "next/link"
 
 const stats = [
-  { title: "Total Revenue", value: "$45,231", change: "+12.5%" },
+  { title: "Total Revenue", value: "₹45,231", change: "+12.5%" },
   { title: "Orders", value: "1,234", change: "+8.2%" },
   { title: "Customers", value: "5,678", change: "+15.3%" },
   { title: "Products", value: "156", change: "+2.1%" },
 ]
 
 const recentOrders = [
-  { id: "#ORD-001", customer: "John Doe", email: "john@email.com", amount: "$299", status: "Completed", date: "2024-01-15" },
-  { id: "#ORD-002", customer: "Jane Smith", email: "jane@email.com", amount: "$459", status: "Processing", date: "2024-01-14" },
-  { id: "#ORD-003", customer: "Mike Johnson", email: "mike@email.com", amount: "$199", status: "Shipped", date: "2024-01-13" },
-  { id: "#ORD-004", customer: "Sarah Wilson", email: "sarah@email.com", amount: "$699", status: "Pending", date: "2024-01-12" },
+  { id: "#ORD-001", customer: "John Doe", email: "john@email.com", amount: "₹299", status: "Completed", date: "2024-01-15" },
+  { id: "#ORD-002", customer: "Jane Smith", email: "jane@email.com", amount: "₹459", status: "Processing", date: "2024-01-14" },
+  { id: "#ORD-003", customer: "Mike Johnson", email: "mike@email.com", amount: "₹199", status: "Shipped", date: "2024-01-13" },
+  { id: "#ORD-004", customer: "Sarah Wilson", email: "sarah@email.com", amount: "₹699", status: "Pending", date: "2024-01-12" },
 ]
 
 export default function AdminDashboard() {

@@ -24,7 +24,6 @@ const ProductSchema = new mongoose.Schema({
   },
   offerTag: {
     type: String,
-    enum: ['New Arrival', 'Best Seller', 'Limited Offer', ''],
     default: '',
   },
   images: [{

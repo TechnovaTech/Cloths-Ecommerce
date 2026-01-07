@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Edit, Trash2, X } from "lucide-react"
+import { Plus, Edit, Trash2, X, Eye, Search } from "lucide-react"
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
@@ -27,7 +27,10 @@ export default function CollectionsAdmin() {
   const [products, setProducts] = React.useState<Product[]>([])
   const [loading, setLoading] = React.useState(true)
   const [showModal, setShowModal] = React.useState(false)
+  const [showDetailModal, setShowDetailModal] = React.useState(false)
   const [editingCollection, setEditingCollection] = React.useState<Collection | null>(null)
+  const [viewingCollection, setViewingCollection] = React.useState<Collection | null>(null)
+  const [searchTerm, setSearchTerm] = React.useState("")
   const [collectionForm, setCollectionForm] = React.useState({
     name: "",
     description: "",
@@ -170,6 +173,17 @@ export default function CollectionsAdmin() {
     }
   }
 
+  const handleViewDetails = (collection: Collection) => {
+    setViewingCollection(collection)
+    setShowDetailModal(true)
+  }
+
+  const filteredCollections = collections.filter(collection =>
+    collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    collection.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    collection.status.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   if (loading) {
     return (
       <AdminAuthWrapper>
@@ -188,13 +202,25 @@ export default function CollectionsAdmin() {
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h3 className="text-lg font-serif font-bold text-primary">Collections Management</h3>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
-          >
-            <Plus size={16} />
-            Add Collection
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search collections..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-accent text-sm w-64"
+              />
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Add Collection
+            </button>
+          </div>
         </div>
         
         <div className="overflow-x-auto">
@@ -209,7 +235,7 @@ export default function CollectionsAdmin() {
               </tr>
             </thead>
             <tbody>
-              {collections.map((collection) => (
+              {filteredCollections.map((collection) => (
                 <tr key={collection._id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
@@ -253,14 +279,23 @@ export default function CollectionsAdmin() {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={() => handleViewDetails(collection)}
+                        className="p-1 text-gray-600 hover:text-blue-600"
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
                         onClick={() => handleEdit(collection)}
                         className="p-1 text-gray-600 hover:text-primary"
+                        title="Edit Collection"
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(collection._id)}
                         className="p-1 text-gray-600 hover:text-red-600"
+                        title="Delete Collection"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -268,6 +303,13 @@ export default function CollectionsAdmin() {
                   </td>
                 </tr>
               ))}
+              {filteredCollections.length === 0 && searchTerm && (
+                <tr>
+                  <td colSpan="5" className="py-8 text-center text-gray-500">
+                    No collections found matching "{searchTerm}"
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -411,6 +453,131 @@ export default function CollectionsAdmin() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Detail View Modal */}
+      {showDetailModal && viewingCollection && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-sm w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-border flex items-center justify-between sticky top-0 bg-white">
+              <h3 className="text-lg font-serif font-bold text-primary">
+                Collection Details - {viewingCollection.name}
+              </h3>
+              <button 
+                onClick={() => setShowDetailModal(false)} 
+                className="p-2 hover:bg-gray-100 rounded-sm"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Collection Name
+                  </label>
+                  <p className="text-lg font-medium text-primary">{viewingCollection.name}</p>
+                </div>
+                
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Status
+                  </label>
+                  <span className={`inline-block text-sm px-3 py-1 rounded-full ${
+                    viewingCollection.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {viewingCollection.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Description
+                </label>
+                <p className="text-gray-700 leading-relaxed">{viewingCollection.description}</p>
+              </div>
+
+              {/* Date */}
+              <div className="pt-6 border-t border-gray-200">
+                <div>
+                  <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                    Date
+                  </label>
+                  <p className="text-gray-700">
+                    {new Date(viewingCollection.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Collection Images */}
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Collection Images ({viewingCollection.images?.length || 0})
+                </label>
+                {viewingCollection.images && viewingCollection.images.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {viewingCollection.images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={image} 
+                          alt={`Collection ${index + 1}`} 
+                          className="w-full h-32 object-cover rounded border hover:shadow-lg transition-shadow"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded flex items-center justify-center">
+                          <span className="text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                            Image {index + 1}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No images available</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Products in Collection */}
+              <div>
+                <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
+                  Products in Collection ({viewingCollection.products?.length || 0})
+                </label>
+                {viewingCollection.products && viewingCollection.products.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {getProductsByIds(viewingCollection.products).map((product) => (
+                      <div key={product._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={product.images?.[0] || "/placeholder.svg"} 
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">{product.name}</h4>
+                            <p className="text-sm text-gray-600">₹{product.price}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No products in this collection</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

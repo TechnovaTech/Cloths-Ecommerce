@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Search, ShoppingBag, User, Menu, X, Heart, LogOut } from "lucide-react"
+import { ShoppingBag, User, Menu, X, Heart, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import { useWishlist } from "@/contexts/WishlistContext"
@@ -75,9 +75,6 @@ export function Navbar() {
 
         {/* Icons - Right */}
         <div className="flex items-center gap-4 md:gap-6">
-          <button className="p-2 hover:text-accent smooth-transition" suppressHydrationWarning>
-            <Search size={20} strokeWidth={1.5} />
-          </button>
           <Link href="/wishlist" className="hidden md:block p-2 hover:text-accent smooth-transition relative">
             <Heart size={20} strokeWidth={1.5} />
             {wishlistCount > 0 && (

@@ -158,7 +158,7 @@ export default function AdminDashboard() {
                 <div>
                   <h3 className="font-semibold">{product.name}</h3>
                   <p className="text-sm text-gray-600">
-                    ${product.price} • {product.category} • Stock: {product.stock}
+                    ₹{product.price} • {product.category} • Stock: {product.stock}
                   </p>
                   {product.featured && <Badge>Featured</Badge>}
                 </div>
