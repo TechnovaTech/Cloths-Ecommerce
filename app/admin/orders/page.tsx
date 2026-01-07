@@ -27,7 +27,7 @@ interface Order {
     price: number
   }>
   totalAmount: number
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled'
   paymentStatus: 'pending' | 'paid' | 'failed'
   paymentMethod?: string
   shippingAddress?: {
@@ -83,8 +83,10 @@ export default function OrdersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending': return <Package size={16} className="text-yellow-600" />
-      case 'processing': return <Package size={16} className="text-blue-600" />
+      case 'confirmed': return <CheckCircle size={16} className="text-blue-600" />
+      case 'processing': return <Package size={16} className="text-orange-600" />
       case 'shipped': return <Truck size={16} className="text-purple-600" />
+      case 'out_for_delivery': return <Truck size={16} className="text-indigo-600" />
       case 'delivered': return <CheckCircle size={16} className="text-green-600" />
       case 'cancelled': return <XCircle size={16} className="text-red-600" />
       default: return <Package size={16} className="text-gray-600" />
@@ -94,8 +96,10 @@ export default function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'processing': return 'bg-blue-100 text-blue-800'
+      case 'confirmed': return 'bg-blue-100 text-blue-800'
+      case 'processing': return 'bg-orange-100 text-orange-800'
       case 'shipped': return 'bg-purple-100 text-purple-800'
+      case 'out_for_delivery': return 'bg-indigo-100 text-indigo-800'
       case 'delivered': return 'bg-green-100 text-green-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -132,8 +136,10 @@ export default function OrdersPage() {
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
               <option value="processing">Processing</option>
               <option value="shipped">Shipped</option>
+              <option value="out_for_delivery">Out for Delivery</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
             </select>
@@ -185,8 +191,10 @@ export default function OrdersPage() {
                           className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(order.status)}`}
                         >
                           <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
                           <option value="processing">Processing</option>
                           <option value="shipped">Shipped</option>
+                          <option value="out_for_delivery">Out for Delivery</option>
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
