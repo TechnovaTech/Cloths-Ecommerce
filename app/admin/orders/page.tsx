@@ -183,40 +183,32 @@ export default function OrdersPage() {
                     <td className="py-4 px-6 font-medium text-gray-600">{index + 1}</td>
                     <td className="py-4 px-6 font-medium text-primary">#{order._id.slice(-8)}</td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                          <User size={14} className="text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{order.user?.name || 'Unknown'}</p>
-                          <p className="text-sm text-gray-600">{order.user?.email || 'No email'}</p>
-                        </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{order.user?.name || 'Unknown'}</p>
+                        <p className="text-sm text-gray-600">{order.user?.email || 'No email'}</p>
                       </div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{order.items.length}</span>
-                        <span className="text-xs text-gray-500">items</span>
+                        <span className="text-xs text-gray-500 font-bold">items</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 font-bold text-primary">${order.totalAmount?.toFixed(2) || '0.00'}</td>
+                    <td className="py-4 px-6 font-bold text-primary">₹{order.totalAmount?.toFixed(2) || '0.00'}</td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(order.status)}
-                        <select
-                          value={order.status}
-                          onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                          className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(order.status)}`}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="out_for_delivery">Out for Delivery</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </div>
+                      <select
+                        value={order.status}
+                        onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                        className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(order.status)}`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
                     </td>
                     <td className="py-4 px-6 text-gray-700">
                       {new Date(order.createdAt).toLocaleDateString()}

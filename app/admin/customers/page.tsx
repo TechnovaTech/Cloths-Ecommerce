@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Eye, Edit, User, Mail, Calendar, ShoppingBag, ChevronDown, ChevronUp, MapPin, Phone, CreditCard } from "lucide-react"
+import { Eye, User, Mail, Calendar, ShoppingBag, ChevronDown, ChevronUp, MapPin, Phone, CreditCard, X, Trash2, Search } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
 import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
@@ -26,7 +26,9 @@ interface Customer {
 export default function CustomersPage() {
   const [customers, setCustomers] = React.useState<Customer[]>([])
   const [loading, setLoading] = React.useState(true)
-  const [expandedCustomers, setExpandedCustomers] = React.useState<Set<string>>(new Set())
+  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null)
+  const [showModal, setShowModal] = React.useState(false)
+  const [searchTerm, setSearchTerm] = React.useState('')
 
   React.useEffect(() => {
     fetchCustomers()
@@ -46,17 +48,35 @@ export default function CustomersPage() {
     }
   }
 
-  const toggleCustomerExpansion = (customerId: string) => {
-    setExpandedCustomers(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(customerId)) {
-        newSet.delete(customerId)
-      } else {
-        newSet.add(customerId)
-      }
-      return newSet
-    })
+  const handleViewCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setShowModal(true)
   }
+
+  const handleDeleteCustomer = async (customerId: string) => {
+    if (confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+      try {
+        const res = await fetch(`/api/admin/customers/${customerId}`, {
+          method: 'DELETE'
+        })
+        if (res.ok) {
+          fetchCustomers()
+        }
+      } catch (error) {
+        console.error('Error deleting customer:', error)
+      }
+    }
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setSelectedCustomer(null)
+  }
+
+  const filteredCustomers = customers.filter(customer => 
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
@@ -75,8 +95,18 @@ export default function CustomersPage() {
     <AdminLayout title="Customers Management" subtitle="Manage your customer database">
       <div className="bg-white border border-border rounded-sm">
         <div className="p-6 border-b border-border flex items-center justify-between">
-          <h2 className="text-lg font-serif font-bold text-primary">All Customers ({customers.length})</h2>
+          <h2 className="text-lg font-serif font-bold text-primary">All Customers ({filteredCustomers.length})</h2>
           <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-sm text-sm focus:outline-none focus:border-accent"
+              />
+            </div>
             <div className="text-sm text-gray-600">
               Total: {customers.length} customers
             </div>
@@ -96,208 +126,69 @@ export default function CustomersPage() {
               </tr>
             </thead>
             <tbody>
-              {customers.map((customer) => {
-                const isExpanded = expandedCustomers.has(customer._id)
-                return (
-                  <React.Fragment key={customer._id}>
-                    <tr className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User size={16} className="text-gray-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-primary">{customer.name}</p>
-                            <div className="flex items-center gap-1 text-sm text-gray-600">
-                              <Mail size={12} />
-                              {customer.email}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          customer.role === 'admin' 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {customer.role || 'customer'}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-1 text-gray-700">
-                          <ShoppingBag size={14} />
-                          {customer.orderCount || 0}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 font-bold text-primary">
-                        ${customer.totalSpent?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-1 text-gray-700">
-                          <Calendar size={14} />
-                          {new Date(customer.createdAt).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => toggleCustomerExpansion(customer._id)}
-                            className="p-1 text-gray-600 hover:text-primary" 
-                            title={isExpanded ? "Hide Details" : "View Details"}
-                          >
-                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    {/* Expanded Details Row */}
-                    {isExpanded && (
-                      <tr className="bg-gray-50">
-                        <td colSpan={6} className="px-6 py-6">
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Customer Information */}
-                            <div className="bg-white p-6 rounded-sm border">
-                              <h4 className="font-medium text-primary mb-4 flex items-center gap-2">
-                                <User size={18} />
-                                Customer Profile
-                              </h4>
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Full Name</p>
-                                    <p className="font-medium text-lg">{customer.name}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Customer ID</p>
-                                    <p className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{customer._id.slice(-8)}</p>
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Email Address</p>
-                                    <p className="font-medium flex items-center gap-2">
-                                      <Mail size={14} className="text-gray-400" />
-                                      {customer.email}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Account Type</p>
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                      customer.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-                                    }`}>
-                                      {customer.role || 'customer'}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Member Since</p>
-                                    <p className="font-medium flex items-center gap-2">
-                                      <Calendar size={14} className="text-gray-400" />
-                                      {new Date(customer.createdAt).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Account Status</p>
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                      Active
-                                    </span>
-                                  </div>
-                                </div>
-                                {customer.address && (
-                                  <div className="pt-4 border-t">
-                                    <div className="flex items-center gap-2 mb-3">
-                                      <MapPin size={16} className="text-gray-600" />
-                                      <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Shipping Address</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-4 rounded border">
-                                      {customer.address.street && <p className="font-medium">{customer.address.street}</p>}
-                                      {(customer.address.city || customer.address.state || customer.address.zipCode) && (
-                                        <p className="text-gray-700">
-                                          {customer.address.city}{customer.address.city && customer.address.state ? ', ' : ''}
-                                          {customer.address.state} {customer.address.zipCode}
-                                        </p>
-                                      )}
-                                      {customer.address.country && <p className="text-gray-600 text-sm">{customer.address.country}</p>}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Order Statistics */}
-                            <div className="bg-white p-6 rounded-sm border">
-                              <h4 className="font-medium text-primary mb-4 flex items-center gap-2">
-                                <ShoppingBag size={18} />
-                                Purchase History
-                              </h4>
-                              <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="text-center p-4 bg-blue-50 rounded border">
-                                  <div className="text-3xl font-bold text-blue-600 mb-1">{customer.orderCount || 0}</div>
-                                  <div className="text-xs text-blue-600 uppercase tracking-wider font-medium">Total Orders</div>
-                                </div>
-                                <div className="text-center p-4 bg-green-50 rounded border">
-                                  <div className="text-3xl font-bold text-green-600 mb-1">${customer.totalSpent?.toFixed(2) || '0.00'}</div>
-                                  <div className="text-xs text-green-600 uppercase tracking-wider font-medium">Total Spent</div>
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="text-center p-3 bg-purple-50 rounded border">
-                                  <div className="text-xl font-bold text-purple-600 mb-1">${customer.totalSpent && customer.orderCount ? (customer.totalSpent / customer.orderCount).toFixed(2) : '0.00'}</div>
-                                  <div className="text-xs text-purple-600 uppercase tracking-wider font-medium">Avg Order</div>
-                                </div>
-                                <div className="text-center p-3 bg-orange-50 rounded border">
-                                  <div className="text-xl font-bold text-orange-600 mb-1">{customer.totalSpent && customer.totalSpent > 500 ? 'VIP' : 'Regular'}</div>
-                                  <div className="text-xs text-orange-600 uppercase tracking-wider font-medium">Status</div>
-                                </div>
-                              </div>
-                              
-                              {/* Recent Orders */}
-                              {customer.recentOrders && customer.recentOrders.length > 0 && (
-                                <div>
-                                  <h5 className="font-medium text-sm mb-3 text-gray-700">Recent Orders</h5>
-                                  <div className="space-y-2">
-                                    {customer.recentOrders.slice(0, 3).map((order: any) => (
-                                      <div key={order._id} className="flex justify-between items-center p-3 bg-gray-50 rounded border text-sm">
-                                        <div>
-                                          <span className="font-medium">#{order._id.slice(-8)}</span>
-                                          <span className="text-gray-600 ml-2">{new Date(order.createdAt).toLocaleDateString()}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                            order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                                            order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-gray-100 text-gray-800'
-                                          }`}>
-                                            {order.status || 'pending'}
-                                          </span>
-                                          <span className="font-bold text-primary">${order.totalAmount?.toFixed(2) || '0.00'}</span>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                )
-              })}
+              {filteredCustomers.map((customer) => (
+                <tr key={customer._id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-4 px-6">
+                    <div>
+                      <p className="font-medium text-primary">{customer.name}</p>
+                      <div className="text-sm text-gray-600">
+                        {customer.email}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      customer.role === 'admin' 
+                        ? 'bg-red-100 text-red-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {customer.role || 'customer'}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="text-gray-700">
+                      {customer.orderCount || 0}
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 font-bold text-primary">
+                    ₹{customer.totalSpent?.toFixed(2) || '0.00'}
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="text-gray-700">
+                      {new Date(customer.createdAt).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleViewCustomer(customer)}
+                        className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" 
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteCustomer(customer._id)}
+                        className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" 
+                        title="Delete Customer"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredCustomers.length === 0 && searchTerm && (
+                <tr>
+                  <td colSpan="6" className="py-8 text-center text-gray-500">
+                    No customers found matching "{searchTerm}"
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           
-          {customers.length === 0 && (
+          {filteredCustomers.length === 0 && !searchTerm && (
             <div className="text-center py-12">
               <User size={48} className="mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500 mb-2">No customers found</p>
@@ -306,6 +197,151 @@ export default function CustomersPage() {
           )}
         </div>
       </div>
+
+      {/* Customer Details Modal */}
+      {showModal && selectedCustomer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-sm w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-serif font-bold text-primary">
+                Customer Details - {selectedCustomer.name}
+              </h3>
+              <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-sm">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Customer Information */}
+                <div className="bg-white p-6 rounded-sm border border-gray-200">
+                  <h4 className="font-bold text-black mb-6 flex items-center gap-2 text-lg">
+                    <User size={18} className="text-black" />
+                    Customer Profile
+                  </h4>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Full Name</p>
+                        <p className="font-bold text-xl text-black">{selectedCustomer.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Customer ID</p>
+                        <p className="font-mono text-sm border-2 border-black px-3 py-2 rounded font-bold text-black">{selectedCustomer._id.slice(-8)}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Email Address</p>
+                        <p className="font-bold flex items-center gap-2 text-black">
+                          <Mail size={14} className="text-black" />
+                          {selectedCustomer.email}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Account Type</p>
+                        <span className="inline-flex items-center px-4 py-2 rounded text-sm font-bold border-2 border-black text-black">
+                          {selectedCustomer.role || 'customer'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Member Since</p>
+                        <p className="font-bold flex items-center gap-2 text-black">
+                          <Calendar size={14} className="text-black" />
+                          {new Date(selectedCustomer.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Account Status</p>
+                        <span className="inline-flex items-center px-4 py-2 rounded text-sm font-bold border-2 border-black text-black">
+                          Active
+                        </span>
+                      </div>
+                    </div>
+                    {selectedCustomer.address && (
+                      <div className="pt-4 border-t border-gray-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin size={16} className="text-black" />
+                          <p className="text-xs text-black uppercase tracking-wide font-bold">Shipping Address</p>
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded border border-gray-200">
+                          {selectedCustomer.address.street && <p className="font-bold text-black">{selectedCustomer.address.street}</p>}
+                          {(selectedCustomer.address.city || selectedCustomer.address.state || selectedCustomer.address.zipCode) && (
+                            <p className="text-black font-medium">
+                              {selectedCustomer.address.city}{selectedCustomer.address.city && selectedCustomer.address.state ? ', ' : ''}
+                              {selectedCustomer.address.state} {selectedCustomer.address.zipCode}
+                            </p>
+                          )}
+                          {selectedCustomer.address.country && <p className="text-black text-sm font-medium">{selectedCustomer.address.country}</p>}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Order Statistics */}
+                <div className="bg-white p-6 rounded-sm border border-gray-200">
+                  <h4 className="font-bold text-black mb-6 flex items-center gap-2 text-lg">
+                    <ShoppingBag size={18} className="text-black" />
+                    Purchase History
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="text-center p-6 border-2 border-black rounded">
+                      <div className="text-4xl font-bold text-black mb-2">{selectedCustomer.orderCount || 0}</div>
+                      <div className="text-xs text-black uppercase tracking-wider font-bold">Total Orders</div>
+                    </div>
+                    <div className="text-center p-6 border-2 border-black rounded">
+                      <div className="text-4xl font-bold text-black mb-2">₹{selectedCustomer.totalSpent?.toFixed(2) || '0.00'}</div>
+                      <div className="text-xs text-black uppercase tracking-wider font-bold">Total Spent</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4 mb-6">
+                    <div className="text-center p-4 border-2 border-black rounded">
+                      <div className="text-2xl font-bold text-black mb-1">₹{selectedCustomer.totalSpent && selectedCustomer.orderCount ? (selectedCustomer.totalSpent / selectedCustomer.orderCount).toFixed(2) : '0.00'}</div>
+                      <div className="text-xs text-black uppercase tracking-wider font-bold">Avg Order</div>
+                    </div>
+                  </div>
+                  
+                  {/* Recent Orders */}
+                  {selectedCustomer.recentOrders && selectedCustomer.recentOrders.length > 0 && (
+                    <div>
+                      <h5 className="font-bold text-sm mb-4 text-black">Recent Orders</h5>
+                      <div className="space-y-3">
+                        {selectedCustomer.recentOrders.slice(0, 3).map((order: any) => (
+                          <div key={order._id} className="flex justify-between items-center p-4 bg-gray-100 rounded border border-gray-200 text-sm">
+                            <div>
+                              <span className="font-bold text-black">#{order._id.slice(-8)}</span>
+                              <span className="text-black ml-3 font-medium">{new Date(order.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className={`px-3 py-1 rounded text-xs font-bold ${
+                                order.status === 'delivered' ? 'bg-black text-white' :
+                                order.status === 'shipped' ? 'bg-gray-800 text-white' :
+                                order.status === 'processing' ? 'bg-gray-600 text-white' :
+                                'bg-gray-400 text-white'
+                              }`}>
+                                {order.status || 'pending'}
+                              </span>
+                              <span className="font-bold text-black">₹{order.totalAmount?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
     </AdminAuthWrapper>
   )

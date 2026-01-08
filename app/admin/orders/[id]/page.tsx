@@ -169,7 +169,7 @@ export default function OrderViewPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-gray-900">${order.totalAmount?.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-gray-900">₹{order.totalAmount?.toFixed(2)}</p>
                   <p className="text-sm text-gray-500">{order.items.length} item{order.items.length !== 1 ? 's' : ''}</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ export default function OrderViewPage() {
                             <div className="space-y-1">
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Unit Price:</span>
-                                <span className="font-medium">${item.price?.toFixed(2)}</span>
+                                <span className="font-medium">₹{item.price?.toFixed(2)}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Category:</span>
@@ -245,7 +245,7 @@ export default function OrderViewPage() {
                               </div>
                               <div className="flex justify-between pt-2 border-t border-gray-200">
                                 <span className="font-semibold text-gray-900">Subtotal:</span>
-                                <span className="font-bold text-gray-900">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
+                                <span className="font-bold text-gray-900">₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -313,16 +313,16 @@ export default function OrderViewPage() {
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Subtotal:</span>
-                          <span className="font-medium">${subtotal.toFixed(2)}</span>
+                          <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Tax & Fees:</span>
-                          <span className="font-medium">${taxAndFees.toFixed(2)}</span>
+                          <span className="font-medium">₹{taxAndFees.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-gray-200 pt-3">
                           <div className="flex justify-between">
                             <span className="text-lg font-semibold text-gray-900">Total Amount:</span>
-                            <span className="text-2xl font-bold text-gray-900">${order.totalAmount?.toFixed(2)}</span>
+                            <span className="text-2xl font-bold text-gray-900">₹{order.totalAmount?.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
