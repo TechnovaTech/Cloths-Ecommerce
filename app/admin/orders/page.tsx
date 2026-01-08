@@ -47,6 +47,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = React.useState<Order[]>([])
   const [loading, setLoading] = React.useState(true)
   const [statusFilter, setStatusFilter] = React.useState('all')
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [itemsPerPage] = React.useState(10)
 
   React.useEffect(() => {
     fetchOrders()
@@ -126,6 +128,16 @@ export default function OrdersPage() {
     statusFilter === 'all' || order.status === statusFilter
   )
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentOrders = filteredOrders.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
   if (loading) {
     return (
       <AdminAuthWrapper>
@@ -177,10 +189,10 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order, index) => (
+              {currentOrders.map((order, index) => (
                 <React.Fragment key={order._id}>
                   <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 px-6 font-medium text-gray-600">{index + 1}</td>
+                    <td className="py-4 px-6 font-medium text-gray-600">{startIndex + index + 1}</td>
                     <td className="py-4 px-6 font-medium text-primary">#{order._id.slice(-8)}</td>
                     <td className="py-4 px-6">
                       <div>
@@ -196,19 +208,9 @@ export default function OrdersPage() {
                     </td>
                     <td className="py-4 px-6 font-bold text-primary">₹{order.totalAmount?.toFixed(2) || '0.00'}</td>
                     <td className="py-4 px-6">
-                      <select
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                        className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(order.status)}`}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="out_for_delivery">Out for Delivery</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
+                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
+                        {order.status.replace('_', ' ')}
+                      </span>
                     </td>
                     <td className="py-4 px-6 text-gray-700">
                       {new Date(order.createdAt).toLocaleDateString()}
@@ -245,6 +247,44 @@ export default function OrdersPage() {
             </div>
           )}
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-6 border-t border-border flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 border rounded text-sm ${
+                    currentPage === page
+                      ? 'bg-primary text-white border-primary'
+                      : 'border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
     </AdminAuthWrapper>

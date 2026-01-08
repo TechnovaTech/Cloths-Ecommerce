@@ -13,6 +13,8 @@ export default function CategoriesAdmin() {
   const [editingCategory, setEditingCategory] = React.useState(null)
   const [viewingCategory, setViewingCategory] = React.useState(null)
   const [searchTerm, setSearchTerm] = React.useState("")
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [itemsPerPage] = React.useState(10)
   const [categoryForm, setCategoryForm] = React.useState({
     name: "",
     description: "",
@@ -150,6 +152,16 @@ export default function CategoriesAdmin() {
     category.status.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCategories = filteredCategories.slice(startIndex, endIndex)
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+  }
+
   if (loading) {
     return (
       <AdminAuthWrapper>
@@ -202,7 +214,7 @@ export default function CategoriesAdmin() {
               </tr>
             </thead>
             <tbody>
-              {filteredCategories.map((category) => (
+              {currentCategories.map((category) => (
                 <tr key={category._id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
@@ -261,7 +273,7 @@ export default function CategoriesAdmin() {
                   </td>
                 </tr>
               ))}
-              {filteredCategories.length === 0 && searchTerm && (
+              {currentCategories.length === 0 && searchTerm && (
                 <tr>
                   <td colSpan="6" className="py-8 text-center text-gray-500">
                     No categories found matching "{searchTerm}"
@@ -271,6 +283,44 @@ export default function CategoriesAdmin() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-6 border-t border-border flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredCategories.length)} of {filteredCategories.length} categories
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 border rounded text-sm ${
+                    currentPage === page
+                      ? 'bg-primary text-white border-primary'
+                      : 'border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}

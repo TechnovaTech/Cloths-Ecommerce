@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
       }
 
+      if (user.isBlocked) {
+        return NextResponse.json({ error: 'Your account has been blocked. Please contact support.' }, { status: 403 });
+      }
+
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!);
 
       return NextResponse.json({

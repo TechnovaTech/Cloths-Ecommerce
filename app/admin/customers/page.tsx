@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Eye, User, Mail, Calendar, ShoppingBag, ChevronDown, ChevronUp, MapPin, Phone, CreditCard, X, Trash2, Search } from "lucide-react"
+import { Eye, User, Mail, Calendar, ShoppingBag, ChevronDown, ChevronUp, MapPin, Phone, CreditCard, X, Trash2, Search, Ban, CheckCircle } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
 import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
@@ -11,6 +11,7 @@ interface Customer {
   email: string
   role: string
   createdAt: string
+  isBlocked?: boolean
   orderCount?: number
   totalSpent?: number
   address?: {
@@ -29,6 +30,13 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null)
   const [showModal, setShowModal] = React.useState(false)
   const [searchTerm, setSearchTerm] = React.useState('')
+  const [showBlockModal, setShowBlockModal] = React.useState(false)
+  const [showUnblockModal, setShowUnblockModal] = React.useState(false)
+  const [customerToBlock, setCustomerToBlock] = React.useState<Customer | null>(null)
+  const [blockReason, setBlockReason] = React.useState('')
+  const [customReason, setCustomReason] = React.useState('')
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [itemsPerPage] = React.useState(10)
 
   React.useEffect(() => {
     fetchCustomers()
@@ -68,6 +76,36 @@ export default function CustomersPage() {
     }
   }
 
+  const handleBlockCustomer = async (customerId: string, isBlocked: boolean) => {
+    try {
+      const res = await fetch('/api/admin/customers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: customerId, isBlocked, reason: blockReason || customReason })
+      })
+      
+      if (res.ok) {
+        fetchCustomers()
+        setShowBlockModal(false)
+        setShowUnblockModal(false)
+        setCustomerToBlock(null)
+        setBlockReason('')
+        setCustomReason('')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
+  const openBlockModal = (customer: Customer) => {
+    setCustomerToBlock(customer)
+    if (customer.isBlocked) {
+      setShowUnblockModal(true)
+    } else {
+      setShowBlockModal(true)
+    }
+  }
+
   const closeModal = () => {
     setShowModal(false)
     setSelectedCustomer(null)
@@ -77,6 +115,16 @@ export default function CustomersPage() {
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCustomers = filteredCustomers.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
 
   if (loading) {
     return (
@@ -126,7 +174,7 @@ export default function CustomersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredCustomers.map((customer) => (
+              {currentCustomers.map((customer) => (
                 <tr key={customer._id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-6">
                     <div>
@@ -137,13 +185,20 @@ export default function CustomersPage() {
                     </div>
                   </td>
                   <td className="py-4 px-6">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      customer.role === 'admin' 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {customer.role || 'customer'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        customer.role === 'admin' 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {customer.role || 'customer'}
+                      </span>
+                      {customer.isBlocked && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
+                          Blocked
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-6">
                     <div className="text-gray-700">
@@ -167,6 +222,19 @@ export default function CustomersPage() {
                       >
                         <Eye size={16} />
                       </button>
+                      {customer.role !== 'admin' && (
+                        <button 
+                          onClick={() => openBlockModal(customer)}
+                          className={`p-1 rounded-full transition-colors ${
+                            customer.isBlocked 
+                              ? 'text-gray-600 hover:text-green-600 hover:bg-green-50' 
+                              : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                          }`}
+                          title={customer.isBlocked ? 'Unblock Customer' : 'Block Customer'}
+                        >
+                          {customer.isBlocked ? <CheckCircle size={16} /> : <Ban size={16} />}
+                        </button>
+                      )}
                       <button 
                         onClick={() => handleDeleteCustomer(customer._id)}
                         className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" 
@@ -178,7 +246,7 @@ export default function CustomersPage() {
                   </td>
                 </tr>
               ))}
-              {filteredCustomers.length === 0 && searchTerm && (
+              {currentCustomers.length === 0 && searchTerm && (
                 <tr>
                   <td colSpan="6" className="py-8 text-center text-gray-500">
                     No customers found matching "{searchTerm}"
@@ -196,6 +264,44 @@ export default function CustomersPage() {
             </div>
           )}
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-6 border-t border-border flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredCustomers.length)} of {filteredCustomers.length} customers
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 border rounded text-sm ${
+                    currentPage === page
+                      ? 'bg-primary text-white border-primary'
+                      : 'border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Customer Details Modal */}
@@ -259,8 +365,12 @@ export default function CustomersPage() {
                       </div>
                       <div>
                         <p className="text-xs text-black uppercase tracking-wide mb-2 font-bold">Account Status</p>
-                        <span className="inline-flex items-center px-4 py-2 rounded text-sm font-bold border-2 border-black text-black">
-                          Active
+                        <span className={`inline-flex items-center px-4 py-2 rounded text-sm font-bold border-2 ${
+                          selectedCustomer.isBlocked 
+                            ? 'border-red-500 text-red-600 bg-red-50' 
+                            : 'border-black text-black'
+                        }`}>
+                          {selectedCustomer.isBlocked ? 'Blocked' : 'Active'}
                         </span>
                       </div>
                     </div>
@@ -337,6 +447,117 @@ export default function CustomersPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Customer Modal */}
+      {showBlockModal && customerToBlock && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-sm w-full max-w-md">
+            <div className="p-6 border-b border-border">
+              <h3 className="text-lg font-bold text-red-600 flex items-center gap-2">
+                ⚠️ Block Customer
+              </h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Shu tame aa customer ne block karva mangcho?
+              </p>
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Reason (Required):</label>
+                <div className="space-y-2">
+                  {['Fake orders', 'Payment issue', 'Return abuse', 'Fraud activity'].map((reason) => (
+                    <label key={reason} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="blockReason"
+                        value={reason}
+                        checked={blockReason === reason}
+                        onChange={(e) => setBlockReason(e.target.value)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{reason}</span>
+                    </label>
+                  ))}
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="blockReason"
+                      value="other"
+                      checked={blockReason === 'other'}
+                      onChange={(e) => setBlockReason(e.target.value)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Other</span>
+                  </label>
+                  {blockReason === 'other' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom reason"
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                      className="w-full mt-2 px-3 py-2 border border-gray-300 rounded text-sm"
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleBlockCustomer(customerToBlock._id, true)}
+                  disabled={!blockReason || (blockReason === 'other' && !customReason)}
+                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  🔴 Yes, Block Customer
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBlockModal(false)
+                    setCustomerToBlock(null)
+                    setBlockReason('')
+                    setCustomReason('')
+                  }}
+                  className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium hover:bg-gray-400"
+                >
+                  ⚪ Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unblock Customer Modal */}
+      {showUnblockModal && customerToBlock && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-sm w-full max-w-md">
+            <div className="p-6 border-b border-border">
+              <h3 className="text-lg font-bold text-green-600 flex items-center gap-2">
+                🔓 Unblock Customer
+              </h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 mb-6">
+                Shu tame aa customer ne unblock karva mangcho?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleBlockCustomer(customerToBlock._id, false)}
+                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700"
+                >
+                  🟢 Unblock
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUnblockModal(false)
+                    setCustomerToBlock(null)
+                  }}
+                  className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium hover:bg-gray-400"
+                >
+                  ⚪ Cancel
+                </button>
               </div>
             </div>
           </div>

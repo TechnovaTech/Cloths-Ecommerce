@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
+import User from '@/models/User';
 import jwt from 'jsonwebtoken';
 
 function getUserFromToken(request: NextRequest) {
@@ -23,6 +24,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Check if user is blocked
+    const userData = await User.findById(user.userId);
+    if (!userData) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    if (userData.isBlocked) {
+      return NextResponse.json({ error: 'Your account has been blocked. You cannot place orders.' }, { status: 403 });
+    }
+
     const orderData = await request.json();
     
     const order = await Order.create({
@@ -43,6 +54,16 @@ export async function GET(request: NextRequest) {
     const user = getUserFromToken(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is blocked
+    const userData = await User.findById(user.userId);
+    if (!userData) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    if (userData.isBlocked) {
+      return NextResponse.json({ error: 'Your account has been blocked.' }, { status: 403 });
     }
 
     const orders = await Order.find({ user: user.userId })

@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
   address: {
     street: String,
     city: String,

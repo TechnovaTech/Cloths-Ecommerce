@@ -22,6 +22,7 @@ export async function GET() {
           name: user.name,
           email: user.email,
           role: user.role,
+          isBlocked: user.isBlocked || false,
           createdAt: user.createdAt,
           orderCount,
           totalSpent
@@ -31,6 +32,34 @@ export async function GET() {
     
     return NextResponse.json(usersWithStats);
   } catch (error) {
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    await dbConnect();
+    const body = await request.json();
+    const { userId, isBlocked } = body;
+    
+    console.log('PUT request body:', body);
+    console.log('Updating user:', userId, 'isBlocked:', isBlocked);
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isBlocked: Boolean(isBlocked) },
+      { new: true }
+    ).select('-password');
+    
+    if (!user) {
+      console.log('User not found:', userId);
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    console.log('User updated successfully:', user.isBlocked);
+    return NextResponse.json({ success: true, user });
+  } catch (error) {
+    console.error('PUT error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

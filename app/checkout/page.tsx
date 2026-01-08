@@ -103,7 +103,12 @@ export default function CheckoutPage() {
         window.location.href = '/profile'
       } else {
         console.error('Order failed:', responseData)
-        alert(`Failed to place order: ${responseData.error || 'Unknown error'}`)
+        if (response.status === 403) {
+          alert('Your account has been blocked. You cannot place orders.')
+          window.location.href = '/'
+        } else {
+          alert(`Failed to place order: ${responseData.error || 'Unknown error'}`)
+        }
       }
     } catch (error) {
       console.error('Error placing order:', error)

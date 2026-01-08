@@ -5,20 +5,76 @@ import { Save } from "lucide-react"
 import { AdminLayout } from "@/components/admin/AdminLayout"
 import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper'
 
+interface SettingsData {
+  siteName: string
+  adminEmail: string
+  currency: string
+  taxRate: number
+  shippingFee: number
+  notifications: boolean
+  emailAlerts: boolean
+  maintenanceMode: boolean
+}
+
 export default function SettingsPage() {
-  const [settings, setSettings] = React.useState({
+  const [settings, setSettings] = React.useState<SettingsData>({
     siteName: "ATELIER",
-    adminEmail: "admin@atelier.com",
-    currency: "USD",
-    taxRate: "10",
-    shippingFee: "15",
+    adminEmail: "admin@example.com",
+    currency: "INR",
+    taxRate: 10,
+    shippingFee: 50,
     notifications: true,
     emailAlerts: true,
     maintenanceMode: false
   })
+  const [loading, setLoading] = React.useState(true)
+  const [saving, setSaving] = React.useState(false)
 
-  const handleSave = () => {
-    console.log("Settings saved:", settings)
+  React.useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/admin/settings')
+      const data = await response.json()
+      setSettings(data)
+    } catch (error) {
+      console.error('Failed to fetch settings:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      })
+      if (response.ok) {
+        alert('Settings saved successfully!')
+      }
+    } catch (error) {
+      console.error('Failed to save settings:', error)
+      alert('Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <AdminAuthWrapper>
+        <AdminLayout title="Settings" subtitle="Configure your store settings">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-600">Loading settings...</div>
+          </div>
+        </AdminLayout>
+      </AdminAuthWrapper>
+    )
   }
 
   return (
@@ -86,19 +142,19 @@ export default function SettingsPage() {
               <input
                 type="number"
                 value={settings.taxRate}
-                onChange={(e) => setSettings({...settings, taxRate: e.target.value})}
+                onChange={(e) => setSettings({...settings, taxRate: Number(e.target.value)})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
               />
             </div>
             
             <div>
               <label className="text-xs uppercase tracking-widest font-bold text-gray-700 mb-2 block">
-                Shipping Fee ($)
+                Shipping Fee (₹)
               </label>
               <input
                 type="number"
                 value={settings.shippingFee}
-                onChange={(e) => setSettings({...settings, shippingFee: e.target.value})}
+                onChange={(e) => setSettings({...settings, shippingFee: Number(e.target.value)})}
                 className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-accent"
               />
             </div>
@@ -142,10 +198,11 @@ export default function SettingsPage() {
       <div className="mt-8 flex justify-end">
         <button
           onClick={handleSave}
-          className="bg-primary text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2"
+          disabled={saving}
+          className="bg-primary text-white px-6 py-3 text-xs uppercase tracking-widest font-bold hover:bg-accent smooth-transition flex items-center gap-2 disabled:opacity-50"
         >
           <Save size={16} />
-          Save Settings
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
     </AdminLayout>
